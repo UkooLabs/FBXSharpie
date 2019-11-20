@@ -7,7 +7,6 @@ build_script:
   - cmd: dotnet build -c Release
 test_script:
   - cmd: dotnet test
-after_build:
-  - cmd: dotnet pack -c Release
-artifacts:
- - path: '**\*.nupkg'
+after_test:
+  - cmd: dotnet pack -c Release -o artifacts
+  - cmd: appveyor PushArtifact "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.nupkg"

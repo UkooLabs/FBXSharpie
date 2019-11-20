@@ -4,9 +4,10 @@ branches:
   only:
   - master
 build_script:
-  - cmd: dotnet build -c Release
+  - cmd: dotnet restore /p:packageversion=%APPVEYOR_BUILD_VERSION% /p:DisableImplicitNuGetFallbackFolder=true
+  - cmd: dotnet build -c Release /p:packageversion=%APPVEYOR_BUILD_VERSION%
 test_script:
   - cmd: dotnet test
 after_test:
-  - cmd: dotnet pack -c Release -o artifacts
+  - cmd: dotnet pack -c Release -o artifacts --no-build /p:packageversion=%APPVEYOR_BUILD_VERSION%
   - cmd: appveyor PushArtifact "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.nupkg"

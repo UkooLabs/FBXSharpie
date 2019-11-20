@@ -3,13 +3,11 @@ image: Visual Studio 2019
 branches:
   only:
   - master
-before_build:
-  - cmd: dotnet restore
 build_script:
   - cmd: dotnet build -c Release
-  - cmd: dotnet pack -c Release
-after_build:
-artifacts:
- - path: '\UkooLabs.FbxSharpie\bin\Release'
 test_script:
   - cmd: dotnet test
+after_build:
+  - cmd: dotnet pack -c Release
+artifacts:
+ - path: '**\*.nupkg'

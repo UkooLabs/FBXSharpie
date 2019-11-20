@@ -103,7 +103,7 @@ namespace UkooLabs.FbxSharpie
             return null;
         }
 
-        public int[] GetGeometryIndices(long geometryId)
+        public int[] GetVertexIndices(long geometryId)
         {
             var geometryNode = GetGeometry(geometryId);
             var vertexIndices = geometryNode.GetRelative("PolygonVertexIndex").Value.AsIntArray;

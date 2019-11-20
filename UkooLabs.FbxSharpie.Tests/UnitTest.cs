@@ -20,7 +20,7 @@ namespace UkooLabs.FbxSharpie.Tests
 			{
 				var materialName = documentNode.GetMaterialName(geometryId);
 				var diffuseColor = documentNode.GetDiffuseColor(geometryId);
-				var vertexIndices = documentNode.GetGeometryIndices(geometryId);
+				var vertexIndices = documentNode.GetVertexIndices(geometryId);
 				var vertices = documentNode.GetVertices(geometryId);
 				var normals = documentNode.GetNormals(geometryId);
 				var tangents = documentNode.GetTangents(geometryId);
@@ -40,7 +40,7 @@ namespace UkooLabs.FbxSharpie.Tests
 			{
 				var materialName = documentNode.GetMaterialName(geometryId);
 				var diffuseColor = documentNode.GetDiffuseColor(geometryId);
-				var vertexIndices = documentNode.GetGeometryIndices(geometryId);
+				var vertexIndices = documentNode.GetVertexIndices(geometryId);
 				var vertices = documentNode.GetVertices(geometryId);
 				var normals = documentNode.GetNormals(geometryId);
 				var tangents = documentNode.GetTangents(geometryId);

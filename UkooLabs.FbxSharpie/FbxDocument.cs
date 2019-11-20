@@ -204,21 +204,6 @@ namespace UkooLabs.FbxSharpie
             return result.ToArray();
         }
 
-        public void Test()
-        {
-            var geometryIds = GetGeometryIds();
-            foreach (var geometryId in geometryIds)
-            {
-                var materialName = GetMaterialName(geometryId);
-                var diffuseColor = GetDiffuseColor(geometryId);
-                var vertexIndices = GetGeometryIndices(geometryId);
-                var vertices = GetVertices(geometryId);
-                var normals = GetNormals(geometryId);
-                var tangents = GetTangents(geometryId);
-                var texCoords = GetTexCoords(geometryId);
-            }
-        }
-
         public double GetScaleFactor()
         {
             var properties = GetRelative("GlobalSettings/Properties70");

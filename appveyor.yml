@@ -16,4 +16,4 @@ deploy:
   api_key:
     secure: aWgBEnAfrZEZXu/7DZTbgzZiZNkSBMjrd7/bulCDHk+HUUDlxb3c67O4702scYaO
   skip_symbols: false
-  artifact: "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.nupkg"
+  artifact: /.*\.nupkg/

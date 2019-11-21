@@ -3,6 +3,7 @@ image: Visual Studio 2019
 branches:
   only:
   - master
+  - develop
 build_script:
   - cmd: dotnet restore /p:packageversion=%APPVEYOR_BUILD_VERSION% /p:DisableImplicitNuGetFallbackFolder=true
   - cmd: dotnet build -c Release /p:packageversion=%APPVEYOR_BUILD_VERSION%
@@ -17,3 +18,5 @@ deploy:
     secure: aWgBEnAfrZEZXu/7DZTbgzZiZNkSBMjrd7/bulCDHk+HUUDlxb3c67O4702scYaO
   skip_symbols: false
   artifact: /.*\.nupkg/
+  on:
+    branch: master 

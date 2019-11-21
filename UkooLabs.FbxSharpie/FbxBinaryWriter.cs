@@ -103,7 +103,7 @@ namespace UkooLabs.FbxSharpie
 		void WriteArray(Array array, Type elementType, PropertyWriter writer)
 		{
 			stream.Write(array.Length);
-			var size = array.Length* Marshal.SizeOf(elementType);
+			var size = array.Length * Marshal.SizeOf(elementType);
 			bool compress = size >= CompressionThreshold;
 			stream.Write(compress ? 1 : 0);
 
@@ -208,7 +208,7 @@ namespace UkooLabs.FbxSharpie
 				var propertyBegin = stream.BaseStream.Position;
 				for(int i = 0; i < node.Properties.Length; i++)
 				{
-					WriteProperty(node.Properties[i], i);
+					WriteProperty(node.Properties[i].AsObject, i);
 				}
 				var propertyEnd = stream.BaseStream.Position;
 				stream.BaseStream.Position = propertyLengthPos;

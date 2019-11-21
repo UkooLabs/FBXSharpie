@@ -7,11 +7,35 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Files\cube-ascii-notangent.fbx" />
+    <None Remove="Files\cube-ascii-nouv.fbx" />
+    <None Remove="Files\cube-ascii-tangent.fbx" />
+    <None Remove="Files\cube-binary-notangent.fbx" />
+    <None Remove="Files\cube-binary-nouv.fbx" />
+    <None Remove="Files\cube-binary-tangent.fbx" />
     <None Remove="Files\mug-ascii.fbx" />
     <None Remove="Files\mug-binary.fbx" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Files\cube-ascii-notangent.fbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\cube-ascii-nouv.fbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\cube-ascii-tangent.fbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\cube-binary-notangent.fbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\cube-binary-nouv.fbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\cube-binary-tangent.fbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Files\mug-ascii.fbx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

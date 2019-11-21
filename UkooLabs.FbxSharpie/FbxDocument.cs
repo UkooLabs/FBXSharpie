@@ -146,48 +146,101 @@ namespace UkooLabs.FbxSharpie
         public Vector3[] GetNormals(long geometryId)
         {
             var geometryNode = GetGeometry(geometryId);
-            var normals = geometryNode.GetRelative("LayerElementNormal/Normals").Value.AsDoubleArray;
-            var result = new List<Vector3>();
-            for (var i = 0; i < normals.Length; i += 3)
-            {
-                result.Add(new Vector3((float)normals[i], (float)normals[i + 1], (float)normals[i + 2]));
-            }
+			var result = new List<Vector3>();
+			var normalNode = geometryNode.GetRelative("LayerElementNormal/Normals");
+			if (normalNode != null)
+			{
+				var normals = normalNode.Value.AsDoubleArray;
+				for (var i = 0; i < normals.Length; i += 3)
+				{
+					result.Add(new Vector3((float)normals[i], (float)normals[i + 1], (float)normals[i + 2]));
+				}
+			}
             return result.ToArray();
         }
 
-        public Vector3[] GetTangents(long geometryId)
+		public bool GetGeometryHasTangents(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			return geometryNode.GetRelative("LayerElementTangent/Tangents") != null;
+		}
+
+		public Vector3[] GetTangents(long geometryId)
         {
             var geometryNode = GetGeometry(geometryId);
-            var tangents = geometryNode.GetRelative("LayerElementTangent/Tangents").Value.AsDoubleArray;
-            var result = new List<Vector3>();
-            for (var i = 0; i < tangents.Length; i += 3)
-            {
-                result.Add(new Vector3((float)tangents[i], (float)tangents[i + 1], (float)tangents[i + 2]));
-            }
+			var result = new List<Vector3>();
+			var tangentNode = geometryNode.GetRelative("LayerElementTangent/Tangents");
+			if (tangentNode != null)
+			{
+				var tangents = tangentNode.Value.AsDoubleArray;
+				for (var i = 0; i < tangents.Length; i += 3)
+				{
+					result.Add(new Vector3((float)tangents[i], (float)tangents[i + 1], (float)tangents[i + 2]));
+				}
+			}
             return result.ToArray();
         }
 
-        public Vector2[] GetTexCoords(long geometryId)
+		public bool GetGeometryHasBinormals(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			return geometryNode.GetRelative("LayerElementBinormal/Binormals") != null;
+		}
+
+		public Vector3[] GetBinormals(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			var result = new List<Vector3>();
+			var binormalNode = geometryNode.GetRelative("LayerElementBinormal/Binormals");
+			if (binormalNode != null)
+			{
+				var binormals = binormalNode.Value.AsDoubleArray;
+				for (var i = 0; i < binormals.Length; i += 3)
+				{
+					result.Add(new Vector3((float)binormals[i], (float)binormals[i + 1], (float)binormals[i + 2]));
+				}
+			}
+			return result.ToArray();
+		}
+
+		public Vector2[] GetTexCoords(long geometryId)
         {
             var geometryNode = GetGeometry(geometryId);
-            var texCoords = geometryNode.GetRelative("LayerElementUV/UV").Value.AsDoubleArray;
-            var result = new List<Vector2>();
-            for (var i = 0; i < texCoords.Length; i += 2)
-            {
-                result.Add(new Vector2((float)texCoords[i], (float)texCoords[i + 1]));
-            }
+			var result = new List<Vector2>();
+			var texCoordNode = geometryNode.GetRelative("LayerElementUV/UV");
+			if (texCoordNode != null)
+			{
+				var texCoords = texCoordNode.Value.AsDoubleArray;
+				for (var i = 0; i < texCoords.Length; i += 2)
+				{
+					result.Add(new Vector2((float)texCoords[i], (float)texCoords[i + 1]));
+				}
+			}
             return result.ToArray();
         }
+
+		public bool GetGeometryHasMaterial(long geometryId)
+		{
+			return GetMaterialNodeForGeometry(geometryId) != null;
+		}
 
         public string GetMaterialName(long geometryId)
         {
             var materialNode = GetMaterialNodeForGeometry(geometryId);
-            return materialNode.Properties[1].AsString.Split(new string[] { "::" }, StringSplitOptions.None)[1];
+			if (materialNode == null)
+			{
+				return null;
+			}
+			return  materialNode.Properties[1].AsString.Split(new string[] { "::" }, StringSplitOptions.None)[1];
         }
 
-        public Vector3 GetDiffuseColor(long geometryId)
+        public Vector3 GetMaterialDiffuseColor(long geometryId)
         {
             var materialNode = GetMaterialNodeForGeometry(geometryId);
+			if (materialNode == null)
+			{
+				return new Vector3();
+			}
             var materialProperties = materialNode.GetRelative("Properties70");
             var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, "DiffuseColor");
             return new Vector3(diffuseProperty.Properties[4].AsFloat, diffuseProperty.Properties[5].AsFloat, diffuseProperty.Properties[6].AsFloat);

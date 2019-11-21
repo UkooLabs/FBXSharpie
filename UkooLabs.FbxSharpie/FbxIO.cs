@@ -11,7 +11,15 @@ namespace UkooLabs.FbxSharpie
 	public static class FbxIO
 	{
 
-		private static bool IsBinaryFbx(Stream stream)
+		public static bool IsBinaryFbx(string path)
+		{
+			using (var stream = new FileStream(path, FileMode.Open))
+			{
+				return IsBinaryFbx(stream);
+			}
+		}
+
+		public static bool IsBinaryFbx(Stream stream)
 		{
 			var position = stream.Position;
 			var isBinary = FbxBinaryReader.ReadHeader(stream);

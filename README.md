@@ -4,6 +4,8 @@ based upon FBXWriter by Hamish Milne
 
 https://github.com/hamish-milne/FbxWriter
 
+[![NuGet](https://img.shields.io/nuget/v/UkooLabs.FbxSharpie.svg?style=flat)](https://www.nuget.org/packages/UkooLabs.FbxSharpie/)
+
 ```csharp
 using UkooLabs.FbxSharpie;
 

@@ -107,27 +107,30 @@ namespace UkooLabs.FbxSharpie
         {
             var geometryNode = GetGeometry(geometryId);
             var vertexIndices = geometryNode.GetRelative("PolygonVertexIndex").Value.AsIntArray;
-            var quadMode = vertexIndices[2] >= 0;
-            var result = new List<int>();
-            if (quadMode)
-            {
-                for (var i = 0; i < vertexIndices.Length; i += 4)
-                {
-                    result.Add(NormalizeIndex(vertexIndices[i]));
-                    result.Add(NormalizeIndex(vertexIndices[i + 1]));
-                    result.Add(NormalizeIndex(vertexIndices[i + 3]));
-                    result.Add(NormalizeIndex(vertexIndices[i + 3]));
-                    result.Add(NormalizeIndex(vertexIndices[i + 1]));
-                    result.Add(NormalizeIndex(vertexIndices[i + 2]));
-                }
-            }
-            else
-            {
-                for (var i = 0; i < vertexIndices.Length; i++)
-                {
-                    result.Add(NormalizeIndex(vertexIndices[i]));
-                }
-            }
+			var result = new List<int>();
+
+			var i = 0;
+			while (i < vertexIndices.Length)
+			{
+				var quadMode = vertexIndices[i + 2] >= 0;
+				if (quadMode)
+				{
+					result.Add(NormalizeIndex(vertexIndices[i]));
+					result.Add(NormalizeIndex(vertexIndices[i + 1]));
+					result.Add(NormalizeIndex(vertexIndices[i + 3]));
+					result.Add(NormalizeIndex(vertexIndices[i + 3]));
+					result.Add(NormalizeIndex(vertexIndices[i + 1]));
+					result.Add(NormalizeIndex(vertexIndices[i + 2]));
+					i += 4;
+				}
+				else
+				{
+					result.Add(NormalizeIndex(vertexIndices[i]));
+					result.Add(NormalizeIndex(vertexIndices[i + 1]));
+					result.Add(NormalizeIndex(vertexIndices[i + 2]));
+					i += 3;
+				}
+			}
             return result.ToArray();
         }
 

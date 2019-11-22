@@ -103,7 +103,38 @@ namespace UkooLabs.FbxSharpie
 		void WriteArray(Array array, Type elementType, PropertyWriter writer)
 		{
 			stream.Write(array.Length);
-			var size = array.Length * Marshal.SizeOf(elementType);
+
+			int itemSize;
+			if (elementType.Equals(typeof(byte)))
+			{
+				itemSize = sizeof(byte);
+			}
+			else if (elementType.Equals(typeof(int)))
+			{
+				itemSize = sizeof(int);
+			}
+			else if (elementType.Equals(typeof(long)))
+			{
+				itemSize = sizeof(long);
+			}
+			else if (elementType.Equals(typeof(float)))
+			{
+				itemSize = sizeof(float);
+			}
+			else if (elementType.Equals(typeof(double)))
+			{
+				itemSize = sizeof(double);
+			}
+			else if (elementType.Equals(typeof(bool)))
+			{
+				itemSize = sizeof(bool);
+			}
+			else
+			{
+				throw new Exception("Unsupported type");
+			}
+
+			var size = array.Length * itemSize;
 			bool compress = size >= CompressionThreshold;
 			stream.Write(compress ? 1 : 0);
 

@@ -20,9 +20,9 @@ namespace UkooLabs.FbxSharpie
 		/// </remarks>
 		public FbxVersion Version { get; set; } = FbxVersion.v7_4;
 
+		private string PropertiesName => Version >= FbxVersion.v7_0 ? "Properties70" : "Properties60";
 
-
-        private FbxNode GetNodeWithValue(FbxNode[] nodes, object value)
+		private FbxNode GetNodeWithValue(FbxNode[] nodes, object value)
         {
             foreach (var node in nodes)
             {
@@ -241,7 +241,7 @@ namespace UkooLabs.FbxSharpie
 			{
 				return new Vector3();
 			}
-            var materialProperties = materialNode.GetRelative("Properties70");
+            var materialProperties = materialNode.GetRelative(PropertiesName);
             var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, "DiffuseColor");
             return new Vector3(diffuseProperty.Properties[4].AsFloat, diffuseProperty.Properties[5].AsFloat, diffuseProperty.Properties[6].AsFloat);
         }
@@ -259,9 +259,9 @@ namespace UkooLabs.FbxSharpie
 
         public double GetScaleFactor()
         {
-            var properties = GetRelative("GlobalSettings/Properties70");
+            var properties = Version >= FbxVersion.v7_0 ? GetRelative($"GlobalSettings/{PropertiesName}") : GetRelative($"Objects/GlobalSettings/{PropertiesName}");
             var unitScaleFactor = GetNodeWithValue(properties.Nodes, "UnitScaleFactor");
-            return unitScaleFactor.Properties[4].AsDouble;
+            return unitScaleFactor.Properties[Version >= FbxVersion.v7_0 ? 4 : 3].AsDouble;
         }
     }
 }

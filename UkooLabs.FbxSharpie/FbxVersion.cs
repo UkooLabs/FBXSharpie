@@ -38,12 +38,12 @@ namespace UkooLabs.FbxSharpie
 		v7_3 = 7300,
 
 		/// <summary>
-		/// FBX 2014 version
+		/// FBX 2014-15 version
 		/// </summary>
 		v7_4 = 7400,
 
 		/// <summary>
-		/// FBX 2016 version, adds large file (>2GB support), not compatible with older versions
+		/// FBX 2016-19 version, adds large file (>2GB support), not compatible with older versions
 		/// </summary>
 		v7_5 = 7500
 	}

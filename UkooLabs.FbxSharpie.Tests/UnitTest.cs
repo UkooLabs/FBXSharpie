@@ -66,7 +66,7 @@ namespace UkooLabs.FbxSharpie.Tests
 				}
 				if (documentNode.GetGeometryHasBinormals(geometryId))
 				{
-					var tangents = documentNode.GetBinormals(geometryId);
+					var binormals = documentNode.GetBinormals(geometryId);
 				}
 				if (documentNode.GetGeometryHasMaterial(geometryId))
 				{

@@ -234,16 +234,17 @@ namespace UkooLabs.FbxSharpie
 			return  materialNode.Properties[1].AsString.Split(new string[] { "::" }, StringSplitOptions.None)[1];
         }
 
-        public Vector3 GetMaterialDiffuseColor(long geometryId)
+        public Vector4 GetMaterialDiffuseColor(long geometryId)
         {
             var materialNode = GetMaterialNodeForGeometry(geometryId);
 			if (materialNode == null)
 			{
-				return new Vector3();
+				return new Vector4(1.0f);
 			}
             var materialProperties = materialNode.GetRelative(PropertiesName);
             var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, "DiffuseColor");
-            return new Vector3(diffuseProperty.Properties[4].AsFloat, diffuseProperty.Properties[5].AsFloat, diffuseProperty.Properties[6].AsFloat);
+			var alpha = diffuseProperty.Properties.Length > 7 ? diffuseProperty.Properties[7].AsFloat : 1.0f;
+			return new Vector4(diffuseProperty.Properties[4].AsFloat, diffuseProperty.Properties[5].AsFloat, diffuseProperty.Properties[6].AsFloat, alpha);
         }
 
         public long[] GetGeometryIds()

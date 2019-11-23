@@ -4,6 +4,16 @@ based upon FBXWriter by Hamish Milne
 
 https://github.com/hamish-milne/FbxWriter
 
+Current features...
+
+- Read FBX binary files
+- Read FBX ASCII files
+- Write FBX binary files
+- Write FBX ASCII files
+- Auto format detection
+- Store and manipulate raw FBX object data
+- Higher level processing of FBX nodes (In progress)
+
 [![NuGet](https://img.shields.io/nuget/v/UkooLabs.FbxSharpie.svg?style=flat)](https://www.nuget.org/packages/UkooLabs.FbxSharpie/)
 
 ```csharp

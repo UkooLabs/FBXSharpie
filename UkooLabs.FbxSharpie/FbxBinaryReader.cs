@@ -252,6 +252,7 @@ namespace UkooLabs.FbxSharpie
 			var validFooterExtension = CheckFooter(stream, document.Version);
 			if(errorLevel >= ErrorLevel.Strict && !validFooterExtension)
 				throw new FbxException(dataPos, "Invalid footer");
+
 			return document;
 		}
 	}

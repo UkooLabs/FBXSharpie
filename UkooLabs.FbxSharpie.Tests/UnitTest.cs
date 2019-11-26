@@ -76,81 +76,124 @@ namespace UkooLabs.FbxSharpie.Tests
 			}
 		}
 
-		private void CompareFiles(string filename)
+		private void CompareBinaryFiles(string filename)
 		{
 			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 			var testFile = Path.Combine(path, "Files", filename);
 			var originalData = File.ReadAllBytes(testFile);
 			var isBinary = FbxIO.IsBinaryFbx(testFile);
+			Assert.True(isBinary);
 			var documentNode = FbxIO.Read(testFile);
 			using (var newStream = new MemoryStream())
 			{
-				if (isBinary)
-				{
-					FbxIO.WriteBinary(documentNode, newStream);
-				}
-				else
-				{
-					FbxIO.WriteAscii(documentNode, newStream);
-				}
+				FbxIO.WriteBinary(documentNode, newStream);
 				var newData = newStream.ToArray();
 
-				if (originalData.Length != newData.Length)
+				Assert.True(newData.Length <= originalData.Length, $"Unexpected size comparisson");
+				
+				var identical = true;
+				for (var i = 0; i < newData.Length; i++)
 				{
-					var resultPath = Path.Combine(path, "FailedCompares");
-					Directory.CreateDirectory(resultPath);
-					File.WriteAllBytes(Path.Combine(resultPath, $"{Path.GetFileNameWithoutExtension(testFile)}-orig{Path.GetExtension(testFile)}"), originalData);
-					File.WriteAllBytes(Path.Combine(resultPath, $"{Path.GetFileNameWithoutExtension(testFile)}-new{Path.GetExtension(testFile)}"), newData);
-					Assert.True(false, $"Length expected {originalData.Length} but was {newData.Length}");
+					if (originalData[i] != newData[i])
+					{
+						identical = false;
+						break;
+					}
 				}
 
-				for (var i = 0; i < originalData.Length; i++)
-				{
-					Assert.True(originalData[i] == newData[i], $"Value expected {originalData[i]} but was {newData[i]}");
-				}
+				Assert.True(identical, $"Files data did not match as expected");
 			}
 		}
 
-		//[Theory]
-		//[InlineData("cube-ascii-fbx2006.fbx")]
-		//[InlineData("cube-ascii-fbx2009.fbx")]
-		//[InlineData("cube-ascii-fbx2010.fbx")]
-		//[InlineData("cube-ascii-fbx2011.fbx")]
-		//[InlineData("cube-ascii-fbx2012.fbx")]
-		//[InlineData("cube-ascii-fbx2013.fbx")]
-		//[InlineData("cube-ascii-fbx2014-15.fbx")]
-		//[InlineData("cube-ascii-fbx2016-17.fbx")]
-		//[InlineData("cube-ascii-fbx2018.fbx")]
-		//[InlineData("cube-ascii-fbx2019.fbx")]
-		//public void TestIdenticalAsciiFbx(string filename)
-		//{
-		//	CompareFiles(filename);
-		//}
+		private string FilterLine(string line)
+		{
+			if (line.StartsWith("; FBX"))
+			{
+				return line;
+			}
+			if (line.StartsWith("; "))
+			{
+				return string.Empty;
+			}
+			return line.Replace(" ", "").Replace("\t", "");
+		}
 
-		//[Theory]
-		//[InlineData("cube-binary-fbx2006.fbx")]
-		//[InlineData("cube-binary-fbx2009.fbx")]
-		//[InlineData("cube-binary-fbx2010.fbx")]
-		//[InlineData("cube-binary-fbx2011.fbx")]
-		//[InlineData("cube-binary-fbx2012.fbx")]
-		//[InlineData("cube-binary-fbx2013.fbx")]
-		//[InlineData("cube-binary-fbx2014-15.fbx")]
-		//[InlineData("cube-binary-fbx2016-17.fbx")]
-		//[InlineData("cube-binary-fbx2018.fbx")]
-		//[InlineData("cube-binary-fbx2019.fbx")]
-		//public void TestIdenticalBinaryFbx(string filename)
-		//{
-		//	CompareFiles(filename);
-		//}
+		private void CompareAsciiFiles(string filename)
+		{
+			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+			var testFile = Path.Combine(path, "Files", filename);
+			var isBinary = FbxIO.IsBinaryFbx(testFile);
+			Assert.False(isBinary);
+			var documentNode = FbxIO.Read(testFile);
+			using (var tempStream = new MemoryStream())
+			{
+				FbxIO.WriteAscii(documentNode, tempStream);
+				tempStream.Position = 0;
 
-		//[Fact]
-		//public void test()
-		//{
-		//	var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-		//	var testFile = Path.Combine(path, "Files", @"cube-ascii-tangent.fbx");
-		//	var documentNode = FbxIO.Read(testFile);
-		//	FbxIO.WriteBinary(documentNode, @"d:\ukoo.fbx");
-		//	//https://github.com/jskorepa/fbx/blob/master/src/fbxdocument.cpp
-		//}
+				var originalBuffer = string.Empty;
+				using (StreamReader originalStream = new StreamReader(testFile))
+				{
+					while (originalStream.EndOfStream)
+					{
+						originalBuffer += FilterLine(originalStream.ReadLine());
+					}
+				}
+
+				var newBuffer = string.Empty;
+				using (StreamReader newStream = new StreamReader(tempStream))
+				{
+					while (newStream.EndOfStream)
+					{
+						newBuffer += FilterLine(newStream.ReadLine());
+					}
+				}
+
+				Assert.True(originalBuffer.Length == newBuffer.Length, $"Unexpected size comparisson");
+
+				var identical = true;
+				for (var i = 0; i < newBuffer.Length; i++)
+				{
+					if (originalBuffer[i] != newBuffer[i])
+					{
+						identical = false;
+						break;
+					}
+				}
+
+				Assert.True(identical, $"Files data did not match as expected");
+			}
+		}
+
+		[Theory]
+		[InlineData("cube-ascii-fbx2006.fbx")]
+		[InlineData("cube-ascii-fbx2009.fbx")]
+		[InlineData("cube-ascii-fbx2010.fbx")]
+		[InlineData("cube-ascii-fbx2011.fbx")]
+		[InlineData("cube-ascii-fbx2012.fbx")]
+		[InlineData("cube-ascii-fbx2013.fbx")]
+		[InlineData("cube-ascii-fbx2014-15.fbx")]
+		[InlineData("cube-ascii-fbx2016-17.fbx")]
+		[InlineData("cube-ascii-fbx2018.fbx")]
+		[InlineData("cube-ascii-fbx2019.fbx")]
+		public void TestCompareAsciiFbx(string filename)
+		{
+			CompareAsciiFiles(filename);
+		}
+
+		[Theory]
+		[InlineData("cube-binary-fbx2006.fbx")]
+		[InlineData("cube-binary-fbx2009.fbx")]
+		[InlineData("cube-binary-fbx2010.fbx")]
+		[InlineData("cube-binary-fbx2011.fbx")]
+		[InlineData("cube-binary-fbx2012.fbx")]
+		[InlineData("cube-binary-fbx2013.fbx")]
+		[InlineData("cube-binary-fbx2014-15.fbx")]
+		[InlineData("cube-binary-fbx2016-17.fbx")]
+		[InlineData("cube-binary-fbx2018.fbx")]
+		[InlineData("cube-binary-fbx2019.fbx")]
+		public void TestCompareBinaryFbx(string filename)
+		{
+			CompareBinaryFiles(filename);
+		}
 	}
 }

@@ -179,7 +179,12 @@ namespace UkooLabs.FbxSharpie
 		protected void WriteFooter(BinaryWriter stream, int version)
 		{
 			var position = stream.BaseStream.Position;
-			var paddingLength = (int)(16 - (position % 16)) + 4;
+			var paddingLength = (int)(16 - (position % 16));
+			if (paddingLength == 0)
+			{
+				paddingLength = 16;
+			}
+			paddingLength += 4;
 			var zeroes = new byte[Math.Max(paddingLength, footerZeroes)];
 			stream.Write(zeroes, 0, paddingLength);
 			stream.Write(version);
@@ -204,7 +209,12 @@ namespace UkooLabs.FbxSharpie
 		protected bool CheckFooter(BinaryReader stream, FbxVersion version)
 		{
 			var position = stream.BaseStream.Position;
-			var paddingLength = (int)(16 - (position % 16)) + 4;
+			var paddingLength = (int)(16 - (position % 16));
+			if (paddingLength == 0)
+			{
+				paddingLength = 16;
+			}
+			paddingLength += 4;
 			var buffer = new byte[Math.Max(paddingLength, footerZeroes)];
 			stream.Read(buffer, 0, paddingLength);
 			bool correct = AllZero(buffer);

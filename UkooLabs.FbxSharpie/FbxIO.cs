@@ -32,11 +32,11 @@ namespace UkooLabs.FbxSharpie
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns>The top level document node</returns>
-		public static FbxDocument Read(string path)
+		public static FbxDocument Read(string path, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			using (var stream = new FileStream(path, FileMode.Open))
 			{
-				return Read(stream);
+				return Read(stream, errorLevel);
 			}
 		}
 
@@ -45,13 +45,13 @@ namespace UkooLabs.FbxSharpie
 		/// </summary>
 		/// <param name="stream"></param>
 		/// <returns>The top level document node</returns>
-		public static FbxDocument Read(Stream stream)
+		public static FbxDocument Read(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if (IsBinaryFbx(stream))
 			{
-				return new FbxBinaryReader(stream).Read();
+				return new FbxBinaryReader(stream, errorLevel).Read();
 			}
-			return new FbxAsciiReader(stream).Read();
+			return new FbxAsciiReader(stream, errorLevel).Read();
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace UkooLabs.FbxSharpie
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns>The top level document node</returns>
-		public static FbxDocument ReadBinary(string path)
+		public static FbxDocument ReadBinary(string path, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if (path == null)
 			{
@@ -67,7 +67,7 @@ namespace UkooLabs.FbxSharpie
 			}
 			using (var stream = new FileStream(path, FileMode.Open))
 			{
-				return ReadBinary(stream);
+				return ReadBinary(stream, errorLevel);
 			}
 		}
 
@@ -76,13 +76,13 @@ namespace UkooLabs.FbxSharpie
 		/// </summary>
 		/// <param name="stream"></param>
 		/// <returns>The top level document node</returns>
-		public static FbxDocument ReadBinary(Stream stream)
+		public static FbxDocument ReadBinary(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if (stream == null) 
 			{
 				throw new ArgumentNullException(nameof(stream));
 			}
-			var reader = new FbxBinaryReader(stream);
+			var reader = new FbxBinaryReader(stream, errorLevel);
 			return reader.Read();
 		}
 
@@ -91,7 +91,7 @@ namespace UkooLabs.FbxSharpie
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns>The top level document node</returns>
-		public static FbxDocument ReadAscii(string path)
+		public static FbxDocument ReadAscii(string path, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if (path == null)
 			{
@@ -99,7 +99,7 @@ namespace UkooLabs.FbxSharpie
 			}
 			using (var stream = new FileStream(path, FileMode.Open))
 			{
-				return ReadAscii(stream);
+				return ReadAscii(stream, errorLevel);
 			}
 		}
 
@@ -108,13 +108,13 @@ namespace UkooLabs.FbxSharpie
 		/// </summary>
 		/// <param name="stream"></param>
 		/// <returns>The top level document node</returns>
-		public static FbxDocument ReadAscii(Stream stream)
+		public static FbxDocument ReadAscii(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if (stream == null)
 			{
 				throw new ArgumentNullException(nameof(stream));
 			}
-			var reader = new FbxAsciiReader(stream);
+			var reader = new FbxAsciiReader(stream, errorLevel);
 			return reader.Read();
 		}
 

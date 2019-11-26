@@ -23,10 +23,8 @@ namespace UkooLabs.FbxSharpie
 		private static readonly byte[] extension =
 			{ 0xF8, 0x5A, 0x8C, 0x6A, 0xDE, 0xF5, 0xD9, 0x7E, 0xEC, 0xE9, 0x0C, 0xE3, 0x75, 0x8F, 0x29, 0x0B };
 
-		// Number of null bytes between the footer code and the version
-		private const int footerZeroes1 = 20;
 		// Number of null bytes between the footer version and extension code
-		private const int footerZeroes2 = 120;
+		private const int footerZeroes = 120;
 
 		/// <summary>
 		/// The size of the footer code
@@ -180,10 +178,12 @@ namespace UkooLabs.FbxSharpie
 		/// <param name="version"></param>
 		protected void WriteFooter(BinaryWriter stream, int version)
 		{
-			var zeroes = new byte[Math.Max(footerZeroes1, footerZeroes2)];
-			stream.Write(zeroes, 0, footerZeroes1);
+			var position = stream.BaseStream.Position;
+			var paddingLength = (int)(16 - (position % 16)) + 4;
+			var zeroes = new byte[Math.Max(paddingLength, footerZeroes)];
+			stream.Write(zeroes, 0, paddingLength);
 			stream.Write(version);
-			stream.Write(zeroes, 0, footerZeroes2);
+			stream.Write(zeroes, 0, footerZeroes);
 			stream.Write(extension, 0, extension.Length);
 		}
 
@@ -203,12 +203,14 @@ namespace UkooLabs.FbxSharpie
 		/// <returns><c>true</c> if it's compliant</returns>
 		protected bool CheckFooter(BinaryReader stream, FbxVersion version)
 		{
-			var buffer = new byte[Math.Max(footerZeroes1, footerZeroes2)];
-			stream.Read(buffer, 0, footerZeroes1);
+			var position = stream.BaseStream.Position;
+			var paddingLength = (int)(16 - (position % 16)) + 4;
+			var buffer = new byte[Math.Max(paddingLength, footerZeroes)];
+			stream.Read(buffer, 0, paddingLength);
 			bool correct = AllZero(buffer);
 			var readVersion = stream.ReadInt32();
 			correct &= (readVersion == (int)version);
-			stream.Read(buffer, 0, footerZeroes2);
+			stream.Read(buffer, 0, footerZeroes);
 			correct &= AllZero(buffer);
 			stream.Read(buffer, 0, extension.Length);
 			correct &= CheckEqual(buffer, extension);

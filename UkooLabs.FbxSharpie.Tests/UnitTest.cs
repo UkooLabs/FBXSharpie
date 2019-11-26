@@ -43,7 +43,7 @@ namespace UkooLabs.FbxSharpie.Tests
 			var testFile = Path.Combine(path, "Files", filename);
 			Assert.True(expectedIsBinary == FbxIO.IsBinaryFbx(testFile), $"IsBinaryFbx expected {expectedIsBinary}");
 
-			var documentNode = FbxIO.Read(testFile);
+			var documentNode = FbxIO.Read(testFile, ErrorLevel.Strict);
 			var scaleFactor = documentNode.GetScaleFactor();
 			Assert.True(expectedScaleFacor == scaleFactor, $"ScaleFactor expected {expectedScaleFacor}");
 

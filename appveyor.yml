@@ -4,6 +4,8 @@ image:
 environment:
   NugetPushApiToken:
     secure: 7I0bEYbZMvuD/9LcnhMCvMixbx5DpS3OVN22iRLHUVYRg4QURYi/STyNQejV6BjK
+  SonarScannerToken:
+    secure: oJWAQW6ibeEpKbq1hG21wbHWjk4fqlwe7+b37IV1VqW059plDfwiYThONbGkvSsU
 build_script:
 - ps: .\build.ps1
 on_success:

@@ -1,12 +1,10 @@
-using System;
 using System.IO;
 using Xunit;
-using UkooLabs.FbxSharpie;
 using System.Reflection;
 
 namespace UkooLabs.FbxSharpie.Tests
 {
-    public class UnitTest
+	public class UnitTest
     {
 		[Theory]
 		[InlineData("mug-ascii.fbx", false, 1.0d, true, true)]

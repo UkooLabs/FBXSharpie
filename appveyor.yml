@@ -1,26 +1,19 @@
 version: '1.0.{build}'
 image: 
   - Visual Studio 2019
-dotnet_csproj:
-  patch: true
-  file: '**\*.csproj'
-  version: '{version}'
-  package_version: '{version}'
-  assembly_version: '{version}'
-  file_version: '{version}'
-  informational_version: '{version}'
 before_build:
   - cmd: dotnet restore
 build:
   publish_nuget: true
   publish_nuget_symbols: true
   use_snupkg_format: true
+  verbosity: minimal
 build_script:
   - cmd: dotnet build -c Release /p:packageversion=%APPVEYOR_BUILD_VERSION%
 test_script:
   - cmd: dotnet test
 after_test:
-  - cmd: dotnet pack -c Release -o artifacts --no-build
+  - cmd: dotnet pack -c Release --no-build /p:packageversion=%APPVEYOR_BUILD_VERSION%
 deploy:
   provider: NuGet
   api_key:

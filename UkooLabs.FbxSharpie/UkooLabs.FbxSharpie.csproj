@@ -16,13 +16,17 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat> 
     <Company>UkooLabs</Company> 
     <Product>FbxSharpie</Product> 
-    <Authors>Peter Tribe</Authors> 
-    <PackageIconUrl>https://raw.githubusercontent.com/UkooLabs/FBXSharpie/master/Icon.png</PackageIconUrl> 
+    <Authors>Peter Tribe</Authors>
+    <PackageIcon>Icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Icon.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>UkooLabs</Copyright>
     <Description>FBX reader and writer for .NET</Description>
+    <RepositoryUrl>https://github.com/UkooLabs/FBXSharpie</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/UkooLabs/FBXSharpie</PackageProjectUrl>
     <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

@@ -10,8 +10,9 @@ build_script:
 test_script:
   - cmd: dotnet test
 after_test:
-  - cmd: dotnet pack -c Release -o artifacts --no-build /p:packageversion=%APPVEYOR_BUILD_VERSION%
+  - cmd: dotnet pack -c Release -o artifacts --include-symbols --include-source --no-build /p:packageversion=%APPVEYOR_BUILD_VERSION%
   - cmd: appveyor PushArtifact "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.nupkg"
+  - cmd: appveyor PushArtifact "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.symbols.nupkg"
 deploy:
   provider: NuGet
   api_key:

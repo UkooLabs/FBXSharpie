@@ -4,6 +4,9 @@ branches:
   only:
   - master
   - develop
+build:
+  publish_nuget_symbols: true
+  use_snupkg_format: true
 build_script:
   - cmd: dotnet restore /p:packageversion=%APPVEYOR_BUILD_VERSION% /p:DisableImplicitNuGetFallbackFolder=true
   - cmd: dotnet build -c Release /p:packageversion=%APPVEYOR_BUILD_VERSION%
@@ -17,7 +20,5 @@ deploy:
   provider: NuGet
   api_key:
     secure: aWgBEnAfrZEZXu/7DZTbgzZiZNkSBMjrd7/bulCDHk+HUUDlxb3c67O4702scYaO
-  skip_symbols: false
-  artifact: /.*\.nupkg/
   on:
     branch: master 

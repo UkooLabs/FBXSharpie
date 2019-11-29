@@ -7,16 +7,21 @@ build:
   publish_nuget: true
   publish_nuget_symbols: true
   use_snupkg_format: true
-  verbosity: minimal
 build_script:
   - cmd: dotnet build -c Release /p:packageversion=%APPVEYOR_BUILD_VERSION%
 test_script:
   - cmd: dotnet test
 after_test:
-  - cmd: dotnet pack -c Release --no-build /p:packageversion=%APPVEYOR_BUILD_VERSION%
+  - cmd: dotnet pack -c Release -o artifacts --no-build /p:packageversion=%APPVEYOR_BUILD_VERSION%
+  - cmd: appveyor PushArtifact "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.nupkg"
+  - cmd: appveyor PushArtifact "artifacts\UkooLabs.FbxSharpie.%APPVEYOR_BUILD_VERSION%.snupkg"
 deploy:
   provider: NuGet
   api_key:
     secure: aWgBEnAfrZEZXu/7DZTbgzZiZNkSBMjrd7/bulCDHk+HUUDlxb3c67O4702scYaO
+  skip_symbols: false
+  artifact: 
+    - /.*\.nupkg/
+    - /.*\.snupkg/
   on:
     branch: master 

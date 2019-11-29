@@ -7,6 +7,8 @@
     <Description>FBX reader and writer for .NET</Description>
     <PackageProjectUrl>https://github.com/UkooLabs/FBXSharpie</PackageProjectUrl>
     <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <IncludeSymbols>true</IncludeSymbols> 
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat> 
   </PropertyGroup>
 
   <ItemGroup>

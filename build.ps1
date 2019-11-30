@@ -8,7 +8,7 @@ if ($env:APPVEYOR_BUILD_VERSION -ne $null)
 if ($env:SonarScannerToken -ne $null)
 {
     dotnet tool install --global dotnet-sonarscanner
-    dotnet sonarscanner begin /k:$env:SonarScannerToken /d:sonar.host.url="https://sonarcloud.io"
+    dotnet sonarscanner begin /k:$env:SonarScannerToken /d:sonar.host.url="https://sonarcloud.io" /d:sonar.sources="./"
 }
 
 dotnet build -c Release /p:packageversion=$version

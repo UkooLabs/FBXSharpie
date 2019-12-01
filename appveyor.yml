@@ -3,7 +3,7 @@ image:
   - Visual Studio 2019
 environment:
   NugetPushApiToken:
-    secure: 7I0bEYbZMvuD/9LcnhMCvMixbx5DpS3OVN22iRLHUVYRg4QURYi/STyNQejV6BjK
+    secure: L0Kw4cdsCTVEuIdk2Zs5cV78vv78V5BltFQ7FEbUI+cck+NBGRmSIxx8ciXQ6XLQ
   SonarScannerToken:
     secure: hv+y0yaBJXEcmrGlZTgdCo4VBN2TZH0mIhrZ7Q2NF8ZJ5mZg9UHHDOO9hh83Vv0N
 build_script:

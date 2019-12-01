@@ -8,11 +8,7 @@ environment:
     secure: hv+y0yaBJXEcmrGlZTgdCo4VBN2TZH0mIhrZ7Q2NF8ZJ5mZg9UHHDOO9hh83Vv0N
 build_script:
 - ps: .\build.ps1
-deploy:
-  provider: NuGet
-  server: https://api.nuget.org/v3/index.json
-  api_key:
-    secure: L0Kw4cdsCTVEuIdk2Zs5cV78vv78V5BltFQ7FEbUI+cck+NBGRmSIxx8ciXQ6XLQ
-  artifact: /.*\.nupkg/
+on_success:
+- ps: .\publish.ps1
   on:
     branch: master 

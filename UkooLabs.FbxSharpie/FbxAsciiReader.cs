@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -62,7 +62,7 @@ namespace UkooLabs.FbxSharpie
 				return '\0';
 			}
 			var ch = (char)singleChar[0];
-			// Handle line and column numbers here;
+			// Handle line and column numbers here
 			// This isn't terribly accurate, but good enough for diagnostics
 			if (ch == '\r')
 			{

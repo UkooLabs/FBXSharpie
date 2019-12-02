@@ -10,6 +10,17 @@ namespace UkooLabs.FbxSharpie
 	// ReSharper disable once InconsistentNaming
 	public static class FbxIO
 	{
+		public static uint CalcChecksum(byte[] array)
+		{
+			const int mod = 65521;
+			uint a = 1, b = 0;
+			foreach (var c in array)
+			{
+				a = (a + c) % mod;
+				b = (b + a) % mod;
+			}
+			return (b << 16) | a;
+		}
 
 		public static bool IsBinaryFbx(string path)
 		{

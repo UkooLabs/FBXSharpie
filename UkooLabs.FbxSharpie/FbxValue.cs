@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace UkooLabs.FbxSharpie
@@ -13,67 +12,52 @@ namespace UkooLabs.FbxSharpie
 			AsObject = value;
 		}
 
-		public char AsChar
-        {
-            get
-            {
-                if (AsObject is char charValue)
-                {
-                    return charValue;
-                }
-                throw new InvalidCastException();
-            }
-        }
+		public char GetAsChar()
+		{
+			if (AsObject is char charValue)
+			{
+				return charValue;
+			}
+			throw new InvalidCastException();
+		}
 
-        public string AsString
-        {
-            get
-            {
-                if (AsObject is string stringValue)
-                {
-                    return stringValue;
-                }
-                throw new InvalidCastException();
-            }
-        }
+		public string GetAsString()
+		{
+			if (AsObject is string stringValue)
+			{
+				return stringValue;
+			}
+			throw new InvalidCastException();
+		}
 
-        public int AsInt
-        {
-            get
-            {
-                if (AsObject is int intValue)
-                {
-                    return intValue;
-                }
-                throw new InvalidCastException();
-            }
-        }
+		public int GetAsInt()
+		{
+			if (AsObject is int intValue)
+			{
+				return intValue;
+			}
+			throw new InvalidCastException();
+		}
 
-        public int[] AsIntArray
-        {
-            get
-            {
-                if (AsObject is int[] intArrayValue)
-                {
-                    return intArrayValue;
-                }
-                throw new InvalidCastException();
-            }
-        }
+		public int[] GetAsIntArray()
+		{
+			if (AsObject is int[] intArrayValue)
+			{
+				return intArrayValue;
+			}
+			throw new InvalidCastException();
+		}
 
-        public long AsLong
-        {
-            get
-            {
-                if (AsObject is long longValue)
-                {
-                    return longValue;
-                }
-                throw new InvalidCastException();
-            }
-        }
+		public long GetAsLong()
+		{
+			if (AsObject is long longValue)
+			{
+				return longValue;
+			}
+			throw new InvalidCastException();
+		}
 
-        private double ToDouble(object value)
+		private double ToDouble(object value)
         {
             if (value is double doubleValue)
             {
@@ -100,7 +84,6 @@ namespace UkooLabs.FbxSharpie
 
         private double[] ToDoubleArray(object value)
         {
-            var result = new List<double>();
             if (value is double[] doubleArray)
             {
                 return doubleArray;
@@ -152,7 +135,6 @@ namespace UkooLabs.FbxSharpie
 
         private float[] ToFloatArray(object value)
         {
-            var result = new List<float>();
 			if (value is double[] doubleArray)
 			{
 				return (from item in doubleArray select ToFloat(item)).ToArray();

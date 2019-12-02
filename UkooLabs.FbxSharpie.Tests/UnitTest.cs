@@ -35,7 +35,7 @@ namespace UkooLabs.FbxSharpie.Tests
 		[InlineData("cube-binary-fbx2016-17.fbx", true, 1.0d, true, true)]
 		[InlineData("cube-binary-fbx2018.fbx", true, 1.0d, true, true)]
 		[InlineData("cube-binary-fbx2019.fbx", true, 1.0d, true, true)]
-		public void TestFbx(string filename, bool expectedIsBinary,  double expectedScaleFacor, bool expectedHasTangent, bool expectedHasBinormal)
+		public void TestFbx(string filename, bool expectedIsBinary, double expectedScaleFacor, bool expectedHasTangent, bool expectedHasBinormal)
 		{
 			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 			var testFile = Path.Combine(path, "Files", filename);
@@ -190,6 +190,13 @@ namespace UkooLabs.FbxSharpie.Tests
 		[InlineData("cube-binary-fbx2018.fbx")]
 		[InlineData("cube-binary-fbx2019.fbx")]
 		public void TestCompareBinaryFbx(string filename)
+		{
+			CompareBinaryFiles(filename);
+		}
+
+		[Theory]
+		[InlineData("mug-binary-compressed.fbx")]
+		public void TestCompressedBinaryFbx(string filename)
 		{
 			CompareBinaryFiles(filename);
 		}

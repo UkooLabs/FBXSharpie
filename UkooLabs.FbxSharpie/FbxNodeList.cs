@@ -8,7 +8,7 @@ namespace UkooLabs.FbxSharpie
 	/// </summary>
 	public abstract class FbxNodeList
 	{
-        private List<FbxNode> _nodes = new List<FbxNode>();
+        private readonly List<FbxNode> _nodes = new List<FbxNode>();
 
         /// <summary>
         /// The list of child/nested nodes

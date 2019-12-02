@@ -88,6 +88,8 @@ namespace UkooLabs.FbxSharpie
 			}
 		}
 
+
+
 		// Reads an array, decompressing it if required
 		Array ReadArray(ReadPrimitive readPrimitive, Type arrayType)
 		{
@@ -97,54 +99,66 @@ namespace UkooLabs.FbxSharpie
 			var ret = Array.CreateInstance(arrayType, len);
 			var s = stream;
 			var endPos = stream.BaseStream.Position + compressedLen;
-			if (encoding != 0)
-			{
-				if(errorLevel >= ErrorLevel.Checked)
-				{
-					if(encoding != 1)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression encoding (must be 0 or 1)");
-					var cmf = stream.ReadByte();
-					if((cmf & 0xF) != 8 || (cmf >> 4) > 7)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression format " + cmf);
-					var flg = stream.ReadByte();
-					if(errorLevel >= ErrorLevel.Strict && ((cmf << 8) + flg) % 31 != 0)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression FCHECK");
-					if((flg & (1 << 5)) != 0)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression flags; dictionary not supported");
-				} else
-				{
-					stream.BaseStream.Position += 2;
-				}
-				var codec = new DeflateWithChecksum(stream.BaseStream, CompressionMode.Decompress);
-				s = new BinaryReader(codec);
-			}
-			try
+
+			if (encoding == 0)
 			{
 				for (int i = 0; i < len; i++)
+				{
 					ret.SetValue(readPrimitive(s), i);
+				}
+				return ret;
 			}
-			catch (InvalidDataException)
+
+			if(errorLevel >= ErrorLevel.Checked)
 			{
-				throw new FbxException(stream.BaseStream.Position - 1,
-					"Compressed data was malformed");
+				if(encoding != 1)
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression encoding (must be 0 or 1)");
+				var cmf = stream.ReadByte();
+				if((cmf & 0xF) != 8 || (cmf >> 4) > 7)
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression format " + cmf);
+				var flg = stream.ReadByte();
+				if(errorLevel >= ErrorLevel.Strict && ((cmf << 8) + flg) % 31 != 0)
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression FCHECK");
+				if((flg & (1 << 5)) != 0)
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression flags; dictionary not supported");
+			} else
+			{
+				stream.BaseStream.Position += 2;
 			}
-			if (encoding != 0)
+
+			using (var codec = new DeflateStream(stream.BaseStream, CompressionMode.Decompress, true))
+			using (var bs = new ChecksumBinaryReader(codec))
 			{
+				try
+				{
+					for (int i = 0; i < len; i++)
+					{
+						ret.SetValue(readPrimitive(bs), i);
+					}
+				}
+				catch (InvalidDataException)
+				{
+					throw new FbxException(stream.BaseStream.Position - 1, "Compressed data was malformed");
+				}
+
 				if (errorLevel >= ErrorLevel.Checked)
 				{
 					stream.BaseStream.Position = endPos - sizeof(int);
 					var checksumBytes = new byte[sizeof(int)];
 					stream.BaseStream.Read(checksumBytes, 0, checksumBytes.Length);
-					int checksum = 0;
+					uint checksum = 0;
 					for (int i = 0; i < checksumBytes.Length; i++)
+					{
 						checksum = (checksum << 8) + checksumBytes[i];
-					if(checksum != ((DeflateWithChecksum)s.BaseStream).Checksum)
-						throw new FbxException(stream.BaseStream.Position,
-							"Compressed data has invalid checksum");
+					}
+					if (checksum != bs.Checksum)
+					{
+						throw new FbxException(stream.BaseStream.Position, "Compressed data has invalid checksum");
+					}
 				}
 				else
 				{

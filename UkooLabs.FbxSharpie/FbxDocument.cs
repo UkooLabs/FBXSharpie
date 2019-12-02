@@ -59,7 +59,7 @@ namespace UkooLabs.FbxSharpie
         private bool HasConnection(long value1, long value2)
         {
             var connections = GetRelative("Connections").Nodes;
-            return connections.Any(c => c != null && c.Properties[1].AsLong == value1 && c.Properties[2].AsLong == value2);
+            return connections.Any(c => c != null && c.Properties[1].GetAsLong() == value1 && c.Properties[2].GetAsLong() == value2);
         }
 
         private int NormalizeIndex(int index)
@@ -73,12 +73,12 @@ namespace UkooLabs.FbxSharpie
             var materials = GetFbxNodes("Material", this);
             foreach (var model in models)
             {
-                var modelId = model.Value.AsLong;
+                var modelId = model.Value.GetAsLong();
                 if (HasConnection(geometryId, modelId))
                 {
                     foreach (var material in materials)
                     {
-                        var materialId = material.Value.AsLong;
+                        var materialId = material.Value.GetAsLong();
                         if (HasConnection(materialId, modelId))
                         {
                             return material;
@@ -94,7 +94,7 @@ namespace UkooLabs.FbxSharpie
             var geometryNodes = GetFbxNodes("Geometry", this);
             foreach (var geometryNode in geometryNodes)
             {
-                if (geometryNode.Value.AsLong != geometryId)
+                if (geometryNode.Value.GetAsLong() != geometryId)
                 {
                     continue;
                 }
@@ -106,7 +106,7 @@ namespace UkooLabs.FbxSharpie
         public int[] GetVertexIndices(long geometryId)
         {
             var geometryNode = GetGeometry(geometryId);
-            var vertexIndices = geometryNode.GetRelative("PolygonVertexIndex").Value.AsIntArray;
+            var vertexIndices = geometryNode.GetRelative("PolygonVertexIndex").Value.GetAsIntArray();
 			var result = new List<int>();
 
 			var i = 0;
@@ -234,7 +234,7 @@ namespace UkooLabs.FbxSharpie
 			{
 				return null;
 			}
-			return  materialNode.Properties[1].AsString.Split(new string[] { "::" }, StringSplitOptions.None)[1];
+			return  materialNode.Properties[1].GetAsString().Split(new string[] { "::" }, StringSplitOptions.None)[1];
         }
 
         public Vector4 GetMaterialDiffuseColor(long geometryId)
@@ -256,7 +256,7 @@ namespace UkooLabs.FbxSharpie
             var result = new List<long>();
             foreach (var geometryNode in geometryNodes)
             {
-                result.Add(geometryNode.Value.AsLong);
+                result.Add(geometryNode.Value.GetAsLong());
             }
             return result.ToArray();
         }

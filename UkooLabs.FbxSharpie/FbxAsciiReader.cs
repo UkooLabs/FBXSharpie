@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -504,7 +504,11 @@ namespace UkooLabs.FbxSharpie
 			// Read version string
 			const string versionString = @"; FBX (\d)\.(\d)\.(\d) project file";
             char c;
-			while(char.IsWhiteSpace(c = ReadChar()) && !endStream) { } // Skip whitespace
+			do
+			{
+				c = ReadChar();
+			}
+			while (char.IsWhiteSpace(c));
 			bool hasVersionString = false;
 			if (c == ';')
 			{

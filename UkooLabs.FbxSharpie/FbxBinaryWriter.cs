@@ -130,31 +130,31 @@ namespace UkooLabs.FbxSharpie
 			}
 			else
 			{
-				throw new Exception("Unsupported type");
+				throw new NotSupportedException("Unsupported type");
 			}
 
 			var size = array.Length * itemSize;
 			bool compress = size >= CompressionThreshold;
 			stream.Write(compress ? 1 : 0);
-
-			var sw = stream;
-			DeflateWithChecksum codec = null;
-
-			var compressLengthPos = stream.BaseStream.Position;
-			stream.Write(size); // Placeholder compressed length
-			var dataStart = stream.BaseStream.Position;
 			if (compress)
 			{
-				stream.Write(new byte[] { 0x58, 0x85 }, 0, 2); // Header bytes for DeflateStream settings
-				codec = new DeflateWithChecksum(stream.BaseStream, CompressionMode.Compress, true);
-				sw = new BinaryWriter(codec);
-			}
-			foreach (var obj in array)
-				writer(sw, obj);
-			if (compress)
-			{
-				codec.Flush(); // This is important - otherwise bytes can be incorrect
-				var checksum = codec.Checksum;
+				var compressLengthPos = stream.BaseStream.Position;
+				stream.Write(0); // Placeholder
+				var dataStart = stream.BaseStream.Position;
+				stream.Write(new byte[] { 0x58, 0x85 }, 0, 2);
+
+				uint checksum;
+
+				using (var codec = new DeflateStream(stream.BaseStream, CompressionMode.Compress, true))
+				using (var binaryWriter = new ChecksumBinaryWriter(codec))
+				{
+					foreach (var obj in array)
+					{
+						writer(binaryWriter, obj);
+					}
+					checksum = binaryWriter.Checksum;
+				}
+
 				byte[] bytes =
 				{
 					(byte)((checksum >> 24) & 0xFF),
@@ -163,15 +163,20 @@ namespace UkooLabs.FbxSharpie
 					(byte)(checksum & 0xFF),
 				};
 				stream.Write(bytes);
-			}
-			
-			// Now we can write the compressed data length, since we know the size
-			if (compress)
-			{
+
 				var dataEnd = stream.BaseStream.Position;
 				stream.BaseStream.Position = compressLengthPos;
-				stream.Write((int)(dataEnd - dataStart));
+				var compressedLength = (int)(dataEnd - dataStart);
+				stream.Write(compressedLength);
 				stream.BaseStream.Position = dataEnd;
+			}
+			else
+			{
+				stream.Write(array.Length * itemSize); 
+				foreach (var obj in array) 
+				{
+					writer(stream, obj);
+				}
 			}
 		}
 
@@ -243,7 +248,7 @@ namespace UkooLabs.FbxSharpie
 				var propertyEnd = stream.BaseStream.Position;
 				stream.BaseStream.Position = propertyLengthPos;
 				if (document.Version >= FbxVersion.v7_5)
-					stream.Write((long)(propertyEnd - propertyBegin));
+					stream.Write(propertyEnd - propertyBegin);
 				else
 					stream.Write((int)(propertyEnd - propertyBegin));
 				stream.BaseStream.Position = propertyEnd;
@@ -264,7 +269,7 @@ namespace UkooLabs.FbxSharpie
 				var dataEnd = stream.BaseStream.Position;
 				stream.BaseStream.Position = endOffsetPos;
 				if (document.Version >= FbxVersion.v7_5)
-					stream.Write((long)dataEnd);
+					stream.Write(dataEnd);
 				else
 					stream.Write((int)dataEnd);
 				stream.BaseStream.Position = dataEnd;

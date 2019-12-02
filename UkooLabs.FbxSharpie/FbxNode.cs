@@ -7,7 +7,7 @@ namespace UkooLabs.FbxSharpie
 	/// </summary>
 	public class FbxNode : FbxNodeList
 	{
-        private List<FbxValue> _properties = new List<FbxValue>();
+        private readonly List<FbxValue> _properties = new List<FbxValue>();
 
 		/// <summary>
 		/// The node name, which is often a class type

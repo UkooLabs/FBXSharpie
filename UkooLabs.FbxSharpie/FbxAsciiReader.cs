@@ -164,7 +164,11 @@ namespace UkooLabs.FbxSharpie
 			switch (c)
 			{
 				case ';': // Comments
-					while (!IsLineEnd(ReadChar()) && !endStream) { } // Skip a line
+					do
+					{
+						c = ReadChar();
+					}
+					while (!IsLineEnd(c) && !endStream); // Skip a line
 					return null;
 				case '{': // Operators
 				case '}':
@@ -186,7 +190,11 @@ namespace UkooLabs.FbxSharpie
 					if (char.IsWhiteSpace(c))
 					{
 						// Merge whitespace
-						while (char.IsWhiteSpace(c = ReadChar()) && !endStream) { }
+						do
+						{
+							c = ReadChar();
+						}
+						while (char.IsWhiteSpace(c) && !endStream);
 						if (!endStream)
 							prevChar = c;
 						return null;
@@ -516,7 +524,8 @@ namespace UkooLabs.FbxSharpie
 				do
 				{
 					sb.Append(c);
-				} while (!IsLineEnd(c = ReadChar()) && !endStream);
+					c = ReadChar();
+				} while (!IsLineEnd(c) && !endStream);
 				var match = Regex.Match(sb.ToString(), versionString);
 				hasVersionString = match.Success;
 				if(hasVersionString)

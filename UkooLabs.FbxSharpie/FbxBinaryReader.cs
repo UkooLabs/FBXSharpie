@@ -241,7 +241,6 @@ namespace UkooLabs.FbxSharpie
 			var document = new FbxDocument {Version = (FbxVersion) stream.ReadInt32()};
 
 			// Read nodes
-			var dataPos = stream.BaseStream.Position;
 			FbxNode nested;
 			do
 			{
@@ -262,7 +261,7 @@ namespace UkooLabs.FbxSharpie
 			}
 
 			// Read footer extension
-			dataPos = stream.BaseStream.Position;
+			var dataPos = stream.BaseStream.Position;
 			var validFooterExtension = CheckFooter(stream, document.Version);
 			if(errorLevel >= ErrorLevel.Strict && !validFooterExtension)
 				throw new FbxException(dataPos, "Invalid footer");

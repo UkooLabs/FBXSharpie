@@ -29,7 +29,10 @@ namespace UkooLabs.FbxSharpie
 		public FbxBinaryWriter(Stream stream)
 		{
 			if(stream == null)
+			{
 				throw new ArgumentNullException(nameof(stream));
+			}
+
 			output = stream;
 			// Wrap in a memory stream to guarantee seeking
 			memory = new MemoryStream();
@@ -88,7 +91,10 @@ namespace UkooLabs.FbxSharpie
 				for (int i = tokens.Length - 1; i >= 0; i--)
 				{
 					if (!first)
+					{
 						sb.Append(binarySeparator);
+					}
+
 					sb.Append(tokens[i]);
 					first = false;
 				}
@@ -183,11 +189,17 @@ namespace UkooLabs.FbxSharpie
 		void WriteProperty(object obj, int id)
 		{
 			if (obj == null)
+			{
 				return;
+			}
+
 			WriterInfo writerInfo;
 			if(!writePropertyActions.TryGetValue(obj.GetType(), out writerInfo))
+			{
 				throw new FbxException(nodePath, id,
 					"Invalid property type " + obj.GetType());
+			}
+
 			stream.Write((byte)writerInfo.id);
 			// ReSharper disable once AssignNullToNotNullAttribute
 			if (writerInfo.writer == null) // Array type
@@ -195,7 +207,9 @@ namespace UkooLabs.FbxSharpie
 				var elementType = obj.GetType().GetElementType();
 				WriteArray((Array) obj, elementType, writePropertyActions[elementType].writer);
 			} else
+			{
 				writerInfo.writer(stream, obj);
+			}
 		}
 
 		// Data for a null node
@@ -214,8 +228,10 @@ namespace UkooLabs.FbxSharpie
 				nodePath.Push(node.Name ?? "");
 				var name = string.IsNullOrEmpty(node.Name) ? null : Encoding.ASCII.GetBytes(node.Name);
 				if(name != null && name.Length > byte.MaxValue)
+				{
 					throw new FbxException(stream.BaseStream.Position,
 						"Node name is too long");
+				}
 
 				// Header
 				var endOffsetPos = stream.BaseStream.Position;
@@ -237,7 +253,9 @@ namespace UkooLabs.FbxSharpie
 
 				stream.Write((byte)(name?.Length ?? 0));
 				if(name != null)
+				{
 					stream.Write(name);
+				}
 
 				// Write properties and length
 				var propertyBegin = stream.BaseStream.Position;
@@ -248,9 +266,14 @@ namespace UkooLabs.FbxSharpie
 				var propertyEnd = stream.BaseStream.Position;
 				stream.BaseStream.Position = propertyLengthPos;
 				if (document.Version >= FbxVersion.v7_5)
+				{
 					stream.Write(propertyEnd - propertyBegin);
+				}
 				else
+				{
 					stream.Write((int)(propertyEnd - propertyBegin));
+				}
+
 				stream.BaseStream.Position = propertyEnd;
 
 				// Write child nodes
@@ -259,7 +282,10 @@ namespace UkooLabs.FbxSharpie
 					foreach (var n in node.Nodes)
 					{
 						if(n == null)
+						{
 							continue;
+						}
+
 						WriteNode(document, n);
 					}
 					WriteNode(document, null);
@@ -269,9 +295,14 @@ namespace UkooLabs.FbxSharpie
 				var dataEnd = stream.BaseStream.Position;
 				stream.BaseStream.Position = endOffsetPos;
 				if (document.Version >= FbxVersion.v7_5)
+				{
 					stream.Write(dataEnd);
+				}
 				else
+				{
 					stream.Write((int)dataEnd);
+				}
+
 				stream.BaseStream.Position = dataEnd;
 
 				nodePath.Pop();
@@ -290,7 +321,10 @@ namespace UkooLabs.FbxSharpie
 			// TODO: Do we write a top level node or not? Maybe check the version?
 			nodePath.Clear();
 			foreach (var node in document.Nodes)
+			{
 				WriteNode(document, node);
+			}
+
 			WriteNode(document, null);
 			stream.Write(GenerateFooterCode(document));
 			WriteFooter(stream, (int)document.Version);

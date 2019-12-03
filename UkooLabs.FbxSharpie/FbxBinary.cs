@@ -50,8 +50,13 @@ namespace UkooLabs.FbxSharpie
 		protected static bool CheckEqual(byte[] data, byte[] original)
 		{
 			for (int i = 0; i < original.Length; i++)
+			{
 				if (data[i] != original[i])
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -99,7 +104,9 @@ namespace UkooLabs.FbxSharpie
 			{
 				var prop = elementNode.Properties[0].AsObject;
 				if (prop is int || prop is long)
+				{
 					return (int)prop;
+				}
 			}
 			throw new FbxException(timePath, -1, "Timestamp has no " + element);
 		}
@@ -111,9 +118,12 @@ namespace UkooLabs.FbxSharpie
 		/// <returns>A 16-byte code</returns>
 		protected static byte[] GenerateFooterCode(FbxNodeList document)
 		{
-			var timestamp = document.GetRelative(timePath1 + "/" + timePath2);
+			var timestamp = document.GetRelative($"{timePath1}/{timePath2}");
 			if (timestamp == null)
+			{
 				throw new FbxException(timePath, -1, "No creation timestamp");
+			}
+
 			try
 			{
 				return GenerateFooterCode(
@@ -148,19 +158,39 @@ namespace UkooLabs.FbxSharpie
 			int hour, int minute, int second, int millisecond)
 		{
 			if(year < 0 || year > 9999)
+			{
 				throw new ArgumentOutOfRangeException(nameof(year));
-			if(month < 0 || month > 12)
+			}
+
+			if (month < 0 || month > 12)
+			{
 				throw new ArgumentOutOfRangeException(nameof(month));
-			if(day < 0 || day > 31)
+			}
+
+			if (day < 0 || day > 31)
+			{
 				throw new ArgumentOutOfRangeException(nameof(day));
-			if(hour < 0 || hour >= 24)
+			}
+
+			if (hour < 0 || hour >= 24)
+			{
 				throw new ArgumentOutOfRangeException(nameof(hour));
-			if(minute < 0 || minute >= 60)
+			}
+
+			if (minute < 0 || minute >= 60)
+			{
 				throw new ArgumentOutOfRangeException(nameof(minute));
-			if(second < 0 || second >= 60)
+			}
+
+			if (second < 0 || second >= 60)
+			{
 				throw new ArgumentOutOfRangeException(nameof(second));
-			if(millisecond < 0 || millisecond >= 1000)
+			}
+
+			if (millisecond < 0 || millisecond >= 1000)
+			{
 				throw new ArgumentOutOfRangeException(nameof(millisecond));
+			}
 
 			var str = (byte[]) sourceId.Clone();
 			var mangledTime = $"{second:00}{month:00}{hour:00}{day:00}{(millisecond/10):00}{year:0000}{minute:00}";
@@ -195,8 +225,13 @@ namespace UkooLabs.FbxSharpie
 		static bool AllZero(byte[] array)
 		{
 			foreach(var b in array)
+			{
 				if (b != 0)
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 

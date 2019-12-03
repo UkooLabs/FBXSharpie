@@ -40,7 +40,10 @@ namespace UkooLabs.FbxSharpie
 			int lineStart = sb.Length;
 			// Write identifier
 			for (int i = 0; i < indentLevel; i++)
+			{
 				sb.Append('\t');
+			}
+
 			sb.Append(node.Name).Append(':');
 
 			// Write properties
@@ -49,9 +52,15 @@ namespace UkooLabs.FbxSharpie
 			{
 				var p = node.Properties[j].AsObject;
 				if(p == null)
+				{
 					continue;
+				}
+
 				if (!first)
+				{
 					sb.Append(',');
+				}
+
 				sb.Append(' ');
 				if (p is string)
 				{
@@ -62,22 +71,31 @@ namespace UkooLabs.FbxSharpie
                     // ReSharper disable once PossibleNullReferenceException
                     // We know it's an array, so we don't need to check for null
                     if (array.Rank != 1 || !elementType.GetTypeInfo().IsPrimitive)
-                        throw new FbxException(nodePath, j,
+					{
+						throw new FbxException(nodePath, j,
                             "Invalid array type " + p.GetType());
-                    if (writeArrayLength)
+					}
+
+					if (writeArrayLength)
                     {
                         sb.Append('*').Append(array.Length).Append(" {\n");
                         lineStart = sb.Length;
                         for (int i = -1; i < indentLevel; i++)
-                            sb.Append('\t');
-                        sb.Append("a: ");
+						{
+							sb.Append('\t');
+						}
+
+						sb.Append("a: ");
                     }
                     bool pFirst = true;
                     foreach (var v in (Array)p)
                     {
                         if (!pFirst)
-                            sb.Append(',');
-                        var vstr = v.ToString();
+						{
+							sb.Append(',');
+						}
+
+						var vstr = v.ToString();
                         if ((sb.Length - lineStart) + vstr.Length >= MaxLineLength)
                         {
                             sb.Append('\n');
@@ -90,18 +108,28 @@ namespace UkooLabs.FbxSharpie
                     {
                         sb.Append('\n');
                         for (int i = 0; i < indentLevel; i++)
-                            sb.Append('\t');
-                        sb.Append('}');
+						{
+							sb.Append('\t');
+						}
+
+						sb.Append('}');
                     }
                 }
                 else if (p is char)
-                    sb.Append((char)p);
-                else if (p.GetType().GetTypeInfo().IsPrimitive && p is IFormattable)
-                    sb.Append(p);
-                else
-                    throw new FbxException(nodePath, j,
+				{
+					sb.Append((char)p);
+				}
+				else if (p.GetType().GetTypeInfo().IsPrimitive && p is IFormattable)
+				{
+					sb.Append(p);
+				}
+				else
+				{
+					throw new FbxException(nodePath, j,
                         "Invalid property type " + p.GetType());
-                first = false;
+				}
+
+				first = false;
 			}
 
 			// Write child nodes
@@ -111,11 +139,17 @@ namespace UkooLabs.FbxSharpie
 				foreach (var n in node.Nodes)
 				{
 					if (n == null)
+					{
 						continue;
+					}
+
 					BuildString(n, sb, writeArrayLength, indentLevel + 1);
 				}
 				for (int i = 0; i < indentLevel; i++)
+				{
 					sb.Append('\t');
+				}
+
 				sb.Append('}');
 			}
 			sb.Append('\n');
@@ -133,7 +167,10 @@ namespace UkooLabs.FbxSharpie
 		public void Write(FbxDocument document)
 		{
 			if(document == null)
+			{
 				throw new ArgumentNullException(nameof(document));
+			}
+
 			var sb = new StringBuilder();
 
 			// Write version header (a comment, but required for many importers)
@@ -146,7 +183,10 @@ namespace UkooLabs.FbxSharpie
 			foreach (var n in document.Nodes)
 			{
 				if (n == null)
+				{
 					continue;
+				}
+
 				BuildString(n, sb, document.Version >= FbxVersion.v7_1);
 				sb.Append('\n');
 			}

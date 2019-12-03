@@ -25,10 +25,16 @@ namespace UkooLabs.FbxSharpie
 		public FbxBinaryReader(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if(stream == null)
+			{
 				throw new ArgumentNullException(nameof(stream));
-			if(!stream.CanSeek)
+			}
+
+			if (!stream.CanSeek)
+			{
 				throw new ArgumentException(
 					"The stream must support seeking. Try reading the data into a buffer first");
+			}
+
 			this.stream = new BinaryReader(stream, Encoding.ASCII);
 			this.errorLevel = errorLevel;
 		}
@@ -73,7 +79,10 @@ namespace UkooLabs.FbxSharpie
 						for (int i = tokens.Length - 1; i >= 0; i--)
 						{	
 							if (!first)
+							{
 								sb.Append(asciiSeparator);
+							}
+
 							sb.Append(tokens[i]);
 							first = false;
 						}
@@ -112,19 +121,30 @@ namespace UkooLabs.FbxSharpie
 			if(errorLevel >= ErrorLevel.Checked)
 			{
 				if(encoding != 1)
+				{
 					throw new FbxException(stream.BaseStream.Position - 1,
 						"Invalid compression encoding (must be 0 or 1)");
+				}
+
 				var cmf = stream.ReadByte();
 				if((cmf & 0xF) != 8 || (cmf >> 4) > 7)
+				{
 					throw new FbxException(stream.BaseStream.Position - 1,
 						"Invalid compression format " + cmf);
+				}
+
 				var flg = stream.ReadByte();
 				if(errorLevel >= ErrorLevel.Strict && ((cmf << 8) + flg) % 31 != 0)
+				{
 					throw new FbxException(stream.BaseStream.Position - 1,
 						"Invalid compression FCHECK");
-				if((flg & (1 << 5)) != 0)
+				}
+
+				if ((flg & (1 << 5)) != 0)
+				{
 					throw new FbxException(stream.BaseStream.Position - 1,
 						"Invalid compression flags; dictionary not supported");
+				}
 			} else
 			{
 				stream.BaseStream.Position += 2;
@@ -189,8 +209,11 @@ namespace UkooLabs.FbxSharpie
 			{
 				// The end offset should only be 0 in a null node
 				if(errorLevel >= ErrorLevel.Checked && (numProperties != 0 || propertyListLen != 0 || !string.IsNullOrEmpty(name)))
+				{
 					throw new FbxException(stream.BaseStream.Position,
 						"Invalid node; expected NULL record");
+				}
+
 				return null;
 			}
 
@@ -199,17 +222,24 @@ namespace UkooLabs.FbxSharpie
 			var propertyEnd = stream.BaseStream.Position + propertyListLen;
 			// Read properties
 			for (int i = 0; i < numProperties; i++)
+			{
 				node.AddProperty(ReadProperty());
+			}
 
-			if(errorLevel >= ErrorLevel.Checked && stream.BaseStream.Position != propertyEnd)
+			if (errorLevel >= ErrorLevel.Checked && stream.BaseStream.Position != propertyEnd)
+			{
 				throw new FbxException(stream.BaseStream.Position,
 					"Too many bytes in property list, end point is " + propertyEnd);
+			}
 
 			// Read nested nodes
 			var listLen = endOffset - stream.BaseStream.Position;
 			if(errorLevel >= ErrorLevel.Checked && listLen < 0)
+			{
 				throw new FbxException(stream.BaseStream.Position,
 					"Node has invalid end point");
+			}
+
 			if (listLen > 0)
 			{
 				FbxNode nested;
@@ -219,8 +249,10 @@ namespace UkooLabs.FbxSharpie
 					node.AddNode(nested);
 				} while (nested != null);
 				if (errorLevel >= ErrorLevel.Checked && stream.BaseStream.Position != endOffset)
+				{
 					throw new FbxException(stream.BaseStream.Position,
 						"Too many bytes in node, end point is " + endOffset);
+				}
 			}
 			return node;
 		}
@@ -236,8 +268,11 @@ namespace UkooLabs.FbxSharpie
 			// Read header
 			bool validHeader = ReadHeader(stream.BaseStream);
 			if (errorLevel >= ErrorLevel.Strict && !validHeader)
+			{
 				throw new FbxException(stream.BaseStream.Position,
 					"Invalid header string");
+			}
+
 			var document = new FbxDocument {Version = (FbxVersion) stream.ReadInt32()};
 
 			// Read nodes
@@ -246,7 +281,9 @@ namespace UkooLabs.FbxSharpie
 			{
 				nested = ReadNode(document);
 				if(nested != null)
+				{
 					document.AddNode(nested);
+				}
 			} while (nested != null);
 
 			// Read footer code
@@ -256,15 +293,19 @@ namespace UkooLabs.FbxSharpie
 			{
 				var validCode = GenerateFooterCode(document);
 				if(!CheckEqual(footerCode, validCode))
+				{
 					throw new FbxException(stream.BaseStream.Position - footerCodeSize,
 						"Incorrect footer code");
+				}
 			}
 
 			// Read footer extension
 			var dataPos = stream.BaseStream.Position;
 			var validFooterExtension = CheckFooter(stream, document.Version);
 			if(errorLevel >= ErrorLevel.Strict && !validFooterExtension)
+			{
 				throw new FbxException(dataPos, "Invalid footer");
+			}
 
 			return document;
 		}

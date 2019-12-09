@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -25,15 +26,52 @@ namespace UkooLabs.FbxSharpie
         /// </remarks>
         public FbxValue[] Properties => _properties.ToArray();
 
+		public FbxValue GetPropertyWithName(string name)
+		{
+			foreach (var property in _properties)
+			{
+				if (!property.IsString)
+				{
+					continue;
+				}
+				var propertyName = property.AsString?.Split(new string[] { "::" }, StringSplitOptions.None)[0];
+				if (string.Equals(propertyName, name, StringComparison.CurrentCultureIgnoreCase))
+				{
+					return property;
+				}
+			}
+			return null;
+		}
+
         public void AddProperty(FbxValue value)
         {
             _properties.Add(value);
         }
 
-        /// <summary>
-        /// The first property element
-        /// </summary>
-        public FbxValue Value
+		public int[] PropertiesToIntArray()
+		{
+			var values = new List<int>();
+			foreach (var property in Properties)
+			{
+				values.Add(property.GetAsInt());
+			}
+			return values.ToArray();
+		}
+
+		public float[] PropertiesToFloatArray()
+		{
+			var values = new List<float>();
+			foreach (var property in Properties)
+			{
+				values.Add(property.GetAsInt());
+			}
+			return values.ToArray();
+		}
+
+		/// <summary>
+		/// The first property element
+		/// </summary>
+		public FbxValue Value
 		{
 			get { return Properties.Length < 1 ? null : Properties[0]; }
 			set

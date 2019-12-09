@@ -259,7 +259,7 @@ namespace UkooLabs.FbxSharpie
 		{
 			var geometryNode = GetGeometry(geometryId);
 			var layerNode = geometryNode?.GetRelative(layerElement);
-			var layerTypeNode = layerNode.GetRelative(layerName);
+			var layerTypeNode = layerNode?.GetRelative(layerName);
 			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode.Value.GetAsFloatArray() : layerTypeNode.PropertiesToFloatArray();
 			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
 			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
@@ -271,7 +271,7 @@ namespace UkooLabs.FbxSharpie
 		{
 			var geometryNode = GetGeometry(geometryId);
 			var layerNode = geometryNode?.GetRelative(layerElement);
-			var layerTypeNode = layerNode.GetRelative(layerName);
+			var layerTypeNode = layerNode?.GetRelative(layerName);
 			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode.Value.GetAsIntArray() : layerTypeNode.PropertiesToIntArray();
 			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
 			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();

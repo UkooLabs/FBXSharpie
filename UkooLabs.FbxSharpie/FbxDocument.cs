@@ -150,14 +150,24 @@ namespace UkooLabs.FbxSharpie
 			return string.Equals(value, "Direct", StringComparison.CurrentCultureIgnoreCase);
 		}
 
+		private bool IsIndex(string value)
+		{
+			return string.Equals(value, "Index", StringComparison.CurrentCultureIgnoreCase);
+		}
+
 		private bool IsIndexToDirect(string value)
 		{
-			return string.Equals(value, "Index", StringComparison.CurrentCultureIgnoreCase) || string.Equals(value, "IndexToDirect", StringComparison.CurrentCultureIgnoreCase);
+			return string.Equals(value, "IndexToDirect", StringComparison.CurrentCultureIgnoreCase);
 		}
 
 		private bool IsAllSame(string value)
 		{
 			return string.Equals(value, "AllSame", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsByVertice(string value)
+		{
+			return string.Equals(value, "ByVertice", StringComparison.CurrentCultureIgnoreCase);
 		}
 
 		private bool IsByControlPoint(string value)
@@ -196,18 +206,18 @@ namespace UkooLabs.FbxSharpie
 				{
 					return controlPointIndex;
 				}
-				else if (IsIndexToDirect(referenceMode))
+				else if (IsIndex(referenceMode) || IsIndexToDirect(referenceMode))
 				{
 					return layerIndices[controlPointIndex];
 				}
 			}
-			else if (IsByPolygonVertex(mappingNode))
+			else if (IsByPolygonVertex(mappingNode) || IsByVertice(mappingNode))
 			{
 				if (IsDirect(referenceMode))
 				{
 					return vertexindex;
 				}
-				else if (IsIndexToDirect(referenceMode))
+				else if (IsIndex(referenceMode) || IsIndexToDirect(referenceMode))
 				{
 					return layerIndices[vertexindex];
 				}
@@ -391,6 +401,11 @@ namespace UkooLabs.FbxSharpie
 		//https://github.com/assimp/assimp/blob/78ec42fc17f4c04de04ac195f0fce3bea93a7995/code/FBX/FBXExportNode.cpp
 
 
+		public bool GetGeometryHasMaterials(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			return geometryNode.GetRelative("LayerElementMaterial/Materials") != null;
+		}
 
 		public bool GetGeometryHasTangents(long geometryId)
 		{

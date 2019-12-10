@@ -39,16 +39,13 @@ class FbxExample
 		var isBinary = FbxIO.IsBinaryFbx(testFile);
 		var documentNode = FbxIO.Read(testFile);
 
+		// Scale factor usually 1 or 2.54
 		var scaleFactor = documentNode.GetScaleFactor();
 
 		var materialIds = documentNode.GetMaterialIds();
-		foreach (var materialId in materialIds)
-		{
-			var materialName = documentNode.GetMaterialName(materialId);
-			var diffuseColor = documentNode.GetMaterialDiffuseColor(materialId);
-		}
-
 		var geometryIds = documentNode.GetGeometryIds();
+
+		var fbxIndexer = new FbxIndexer();
 		foreach (var geometryId in geometryIds)
 		{
 			var vertexIndices = documentNode.GetVertexIndices(geometryId);
@@ -62,22 +59,30 @@ class FbxExample
 			var hasTexCoords = documentNode.GetGeometryHasTexCoords(geometryId);
 			var hasTangents = documentNode.GetGeometryHasTangents(geometryId);
 			var hasBinormals = documentNode.GetGeometryHasBinormals(geometryId);
+			var hasMaterials = documentNode.GetGeometryHasMaterials(geometryId);
+
+			for (var i = 0; i < vertices.Length; i++)
+			{
+				var vertex = new FbxVertex
+				{
+					Position = vertices[i],
+					Normal = normals[i],
+					Tangent = hasTangents ? tangents[i] : new Vector3(),
+					Binormal = hasBinormals ? binormals[i] : new Vector3(),
+					TexCoord = hasTexCoords ? texCoords[i] : new Vector2()
+				};
+				var materialId = hasMaterials ? materials[i] : 0;
+				fbxIndexer.AddVertex(vertex, materialId);
+			}
 		}
 
-		var fbxIndexer = new FbxIndexer();
-		for (var i = 0; i < vertices.Length; i++)
+		// Example to re-index geometry based on each material
+		foreach (var materialId in materialIds)
 		{
-			var vertex = new FbxVertex
-			{
-				Position = vertices[i],
-				Normal = normals[i],
-				Tangent = tangents[i],
-				Binormal = binormals[i],
-				TexCoord = texCoords[i]
-			};
-			fbxIndexer.AddVertex(vertex);
+			var materialName = documentNode.GetMaterialName(materialId);
+			var diffuseColor = documentNode.GetMaterialDiffuseColor(materialId);
+			fbxIndexer.Index(materialId, out var indexedVertices, out var indexedIndices);
 		}
-		fbxIndexer.Index(out var indexedVertices, out var indexedIndices);
 	}
 }
 ```

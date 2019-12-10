@@ -83,14 +83,13 @@ namespace UkooLabs.FbxSharpie.Tests
 					{
 						Position = vertices[i],
 						Normal = normals[i],
-						Tangent = tangents[i],
-						Binormal = binormals[i],
-						TexCoord = texCoords[i]
+						Tangent = hasTangents ? tangents[i] : new Vector3(),
+						Binormal = hasBinormals ? binormals[i] : new Vector3(),
+						TexCoord = hasTexCoords ? texCoords[i] : new Vector2()
 					};
 					fbxIndexer.AddVertex(vertex);
 				}
 				fbxIndexer.Index(out var indexedVertices, out var indexedIndices);
-				var a = 1;
 			}
 		}
 

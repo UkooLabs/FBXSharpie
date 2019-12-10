@@ -49,24 +49,25 @@ class FbxExample
 		foreach (var geometryId in geometryIds)
 		{
 			var vertexIndices = documentNode.GetVertexIndices(geometryId);
-			var vertices = documentNode.GetVertices(geometryId, vertexIndices);
+			var positions = documentNode.GetPositions(geometryId, vertexIndices);
 			var normals = documentNode.GetNormals(geometryId, vertexIndices);
 			var tangents = documentNode.GetTangents(geometryId, vertexIndices);
 			var binormals = documentNode.GetBinormals(geometryId, vertexIndices);
 			var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices);
 			var materials = documentNode.GetMaterials(geometryId, vertexIndices);
 
+			var hasNormals = documentNode.GetGeometryHasNormals(geometryId);
 			var hasTexCoords = documentNode.GetGeometryHasTexCoords(geometryId);
 			var hasTangents = documentNode.GetGeometryHasTangents(geometryId);
 			var hasBinormals = documentNode.GetGeometryHasBinormals(geometryId);
 			var hasMaterials = documentNode.GetGeometryHasMaterials(geometryId);
 
-			for (var i = 0; i < vertices.Length; i++)
+			for (var i = 0; i < positions.Length; i++)
 			{
 				var vertex = new FbxVertex
 				{
-					Position = vertices[i],
-					Normal = normals[i],
+					Position = positions[i],
+					Normal = hasNormals ? normals[i] : new Vector3(),
 					Tangent = hasTangents ? tangents[i] : new Vector3(),
 					Binormal = hasBinormals ? binormals[i] : new Vector3(),
 					TexCoord = hasTexCoords ? texCoords[i] : new Vector2()

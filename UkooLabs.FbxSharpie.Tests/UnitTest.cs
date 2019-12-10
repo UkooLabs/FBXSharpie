@@ -11,32 +11,32 @@ namespace UkooLabs.FbxSharpie.Tests
 		[Theory]
 		[InlineData("mug-ascii.fbx", false, 1.0d, true, true, true)]
 		[InlineData("mug-binary.fbx", true, 2.54d, true, true, true)]
-		//[InlineData("cube-ascii-notangent.fbx", false, 1.0d, true, false, false)]
-		//[InlineData("cube-ascii-nouv.fbx", false, 1.0d, false, false, false)]
-		//[InlineData("cube-ascii-tangent.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-notangent.fbx", true, 1.0d, true, false, false)]
-		//[InlineData("cube-binary-nouv.fbx", true, 1.0d, false, false, false)]
-		//[InlineData("cube-binary-tangent.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2006.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2009.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2010.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2011.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2012.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2013.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2014-15.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2016-17.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2018.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-ascii-fbx2019.fbx", false, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2006.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2009.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2010.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2011.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2012.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2013.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2014-15.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2016-17.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2018.fbx", true, 1.0d, true, true, true)]
-		//[InlineData("cube-binary-fbx2019.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-notangent.fbx", false, 1.0d, true, false, false)]
+		[InlineData("cube-ascii-nouv.fbx", false, 1.0d, false, false, false)]
+		[InlineData("cube-ascii-tangent.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-binary-notangent.fbx", true, 1.0d, true, false, false)]
+		[InlineData("cube-binary-nouv.fbx", true, 1.0d, false, false, false)]
+		[InlineData("cube-binary-tangent.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2006.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2009.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2010.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2011.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2012.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2013.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2014-15.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2016-17.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2018.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-ascii-fbx2019.fbx", false, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2006.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2009.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2010.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2011.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2012.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2013.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2014-15.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2016-17.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2018.fbx", true, 1.0d, true, true, true)]
+		[InlineData("cube-binary-fbx2019.fbx", true, 1.0d, true, true, true)]
 		public void TestFbx(string filename, bool expectedIsBinary, double expectedScaleFacor, bool expectedHasTexCoord, bool expectedHasTangent, bool expectedHasBinormal)
 		{
 			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -57,12 +57,14 @@ namespace UkooLabs.FbxSharpie.Tests
 			foreach (var geometryId in geometryIds)
 			{
 				var vertexIndices = documentNode.GetVertexIndices(geometryId);
-				var vertices = documentNode.GetVertices(geometryId, vertexIndices);
+				var positions = documentNode.GetPositions(geometryId, vertexIndices);
 				var normals = documentNode.GetNormals(geometryId, vertexIndices);
 				var tangents = documentNode.GetTangents(geometryId, vertexIndices);
 				var binormals = documentNode.GetBinormals(geometryId, vertexIndices);
 				var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices);
 				var materials = documentNode.GetMaterials(geometryId, vertexIndices);
+
+				var hasNormals = documentNode.GetGeometryHasNormals(geometryId);
 
 				var hasTexCoords = documentNode.GetGeometryHasTexCoords(geometryId);
 				Assert.True(expectedHasTexCoord == hasTexCoords, $"HasTexCoord expected {expectedHasTexCoord}");
@@ -75,12 +77,12 @@ namespace UkooLabs.FbxSharpie.Tests
 
 				var hasMaterials = documentNode.GetGeometryHasMaterials(geometryId);
 
-				for (var i = 0; i < vertices.Length; i++)
+				for (var i = 0; i < positions.Length; i++)
 				{
 					var vertex = new FbxVertex
 					{
-						Position = vertices[i],
-						Normal = normals[i],
+						Position = positions[i],
+						Normal = hasNormals ? normals[i] : new Vector3(),
 						Tangent = hasTangents ? tangents[i] : new Vector3(),
 						Binormal = hasBinormals ? binormals[i] : new Vector3(),
 						TexCoord = hasTexCoords ? texCoords[i] : new Vector2()
@@ -123,7 +125,7 @@ namespace UkooLabs.FbxSharpie.Tests
 			foreach (var geometryId in geometryIds)
 			{
 				var vertexIndices = documentNode.GetVertexIndices(geometryId);
-				var vertices = documentNode.GetVertices(geometryId, vertexIndices);
+				var positions = documentNode.GetPositions(geometryId, vertexIndices);
 				var tangents = documentNode.GetTangents(geometryId, vertexIndices);
 				var binormals = documentNode.GetBinormals(geometryId, vertexIndices);
 				var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices);
@@ -135,43 +137,43 @@ namespace UkooLabs.FbxSharpie.Tests
 			}
 		}
 
-		//[Theory]
-		//[InlineData("cube-ascii-fbx2006.fbx")]
-		//[InlineData("cube-ascii-fbx2009.fbx")]
-		//[InlineData("cube-ascii-fbx2010.fbx")]
-		//[InlineData("cube-ascii-fbx2011.fbx")]
-		//[InlineData("cube-ascii-fbx2012.fbx")]
-		//[InlineData("cube-ascii-fbx2013.fbx")]
-		//[InlineData("cube-ascii-fbx2014-15.fbx")]
-		//[InlineData("cube-ascii-fbx2016-17.fbx")]
-		//[InlineData("cube-ascii-fbx2018.fbx")]
-		//[InlineData("cube-ascii-fbx2019.fbx")]
-		//public void TestCompareAsciiFbx(string filename)
-		//{
-		//	Helpers.Compare.CompareAsciiFiles(filename);
-		//}
+		[Theory]
+		[InlineData("cube-ascii-fbx2006.fbx")]
+		[InlineData("cube-ascii-fbx2009.fbx")]
+		[InlineData("cube-ascii-fbx2010.fbx")]
+		[InlineData("cube-ascii-fbx2011.fbx")]
+		[InlineData("cube-ascii-fbx2012.fbx")]
+		[InlineData("cube-ascii-fbx2013.fbx")]
+		[InlineData("cube-ascii-fbx2014-15.fbx")]
+		[InlineData("cube-ascii-fbx2016-17.fbx")]
+		[InlineData("cube-ascii-fbx2018.fbx")]
+		[InlineData("cube-ascii-fbx2019.fbx")]
+		public void TestCompareAsciiFbx(string filename)
+		{
+			Helpers.Compare.CompareAsciiFiles(filename);
+		}
 
-		//[Theory]
-		//[InlineData("cube-binary-fbx2006.fbx")]
-		//[InlineData("cube-binary-fbx2009.fbx")]
-		//[InlineData("cube-binary-fbx2010.fbx")]
-		//[InlineData("cube-binary-fbx2011.fbx")]
-		//[InlineData("cube-binary-fbx2012.fbx")]
-		//[InlineData("cube-binary-fbx2013.fbx")]
-		//[InlineData("cube-binary-fbx2014-15.fbx")]
-		//[InlineData("cube-binary-fbx2016-17.fbx")]
-		//[InlineData("cube-binary-fbx2018.fbx")]
-		//[InlineData("cube-binary-fbx2019.fbx")]
-		//public void TestCompareBinaryFbx(string filename)
-		//{
-		//	Helpers.Compare.CompareBinaryFiles(filename);
-		//}
+		[Theory]
+		[InlineData("cube-binary-fbx2006.fbx")]
+		[InlineData("cube-binary-fbx2009.fbx")]
+		[InlineData("cube-binary-fbx2010.fbx")]
+		[InlineData("cube-binary-fbx2011.fbx")]
+		[InlineData("cube-binary-fbx2012.fbx")]
+		[InlineData("cube-binary-fbx2013.fbx")]
+		[InlineData("cube-binary-fbx2014-15.fbx")]
+		[InlineData("cube-binary-fbx2016-17.fbx")]
+		[InlineData("cube-binary-fbx2018.fbx")]
+		[InlineData("cube-binary-fbx2019.fbx")]
+		public void TestCompareBinaryFbx(string filename)
+		{
+			Helpers.Compare.CompareBinaryFiles(filename);
+		}
 
-		//[Theory]
-		//[InlineData("mug-binary-compressed.fbx")]
-		//public void TestCompressedBinaryFbx(string filename)
-		//{
-		//	Helpers.Compare.CompareBinaryFiles(filename);
-		//}
+		[Theory]
+		[InlineData("mug-binary-compressed.fbx")]
+		public void TestCompressedBinaryFbx(string filename)
+		{
+			Helpers.Compare.CompareBinaryFiles(filename);
+		}
 	}
 }

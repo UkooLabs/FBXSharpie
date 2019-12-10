@@ -24,7 +24,9 @@ Todo...
 
 [![NuGet](https://img.shields.io/nuget/v/UkooLabs.FbxSharpie.svg?style=flat)](https://www.nuget.org/packages/UkooLabs.FbxSharpie/)
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=UkooLabs_FBXSharpie&metric=alert_status)](https://sonarcloud.io/dashboard?id=UkooLabs_FBXSharpie) [![Join the chat at https://gitter.im/UkooLabs/FBXSharpie](https://badges.gitter.im/UkooLabs/FBXSharpie.svg)](https://gitter.im/UkooLabs/FBXSharpie?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=UkooLabs_FBXSharpie&metric=alert_status)](https://sonarcloud.io/dashboard?id=UkooLabs_FBXSharpie)
+
+[![Join the chat at https://gitter.im/UkooLabs/FBXSharpie](https://badges.gitter.im/UkooLabs/FBXSharpie.svg)](https://gitter.im/UkooLabs/FBXSharpie?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ```csharp
 using UkooLabs.FbxSharpie;

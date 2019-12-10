@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UkooLabs.FbxSharpie", "UkooLabs.FbxSharpie\UkooLabs.FbxSharpie.csproj", "{E195A80B-297D-4404-8960-39CABE896751}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UkooLabs.FbxSharpie.Tests", "UkooLabs.FbxSharpie.Tests\UkooLabs.FbxSharpie.Tests.csproj", "{5BF21323-F472-4AEE-9185-4B0077C3FFF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UkooLabs.FbxSharpie.Tests", "UkooLabs.FbxSharpie.Tests\UkooLabs.FbxSharpie.Tests.csproj", "{5BF21323-F472-4AEE-9185-4B0077C3FFF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

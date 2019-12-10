@@ -63,7 +63,7 @@ namespace UkooLabs.FbxSharpie
 			var values = new List<float>();
 			foreach (var property in Properties)
 			{
-				values.Add(property.GetAsInt());
+				values.Add(property.GetAsFloat());
 			}
 			return values.ToArray();
 		}

@@ -260,7 +260,7 @@ namespace UkooLabs.FbxSharpie
 			var geometryNode = GetGeometry(geometryId);
 			var layerNode = geometryNode?.GetRelative(layerElement);
 			var layerTypeNode = layerNode?.GetRelative(layerName);
-			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode.Value.GetAsFloatArray() : layerTypeNode.PropertiesToFloatArray();
+			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsFloatArray() : layerTypeNode?.PropertiesToFloatArray();
 			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
 			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
 			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.AsString;
@@ -272,7 +272,7 @@ namespace UkooLabs.FbxSharpie
 			var geometryNode = GetGeometry(geometryId);
 			var layerNode = geometryNode?.GetRelative(layerElement);
 			var layerTypeNode = layerNode?.GetRelative(layerName);
-			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode.Value.GetAsIntArray() : layerTypeNode.PropertiesToIntArray();
+			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsIntArray() : layerTypeNode?.PropertiesToIntArray();
 			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
 			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
 			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.AsString;
@@ -388,6 +388,8 @@ namespace UkooLabs.FbxSharpie
 		}
 
 		//https://github.com/nem0/OpenFBX/blob/master/src/ofbx.cpp
+		//https://github.com/assimp/assimp/blob/78ec42fc17f4c04de04ac195f0fce3bea93a7995/code/FBX/FBXExportNode.cpp
+
 
 
 		public bool GetGeometryHasTangents(long geometryId)

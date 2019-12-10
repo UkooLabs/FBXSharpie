@@ -61,6 +61,7 @@ namespace UkooLabs.FbxSharpie.Tests
 			{
 				var vertexIndices = documentNode.GetVertexIndices(geometryId);
 				var vertices = documentNode.GetVertices(geometryId, vertexIndices);
+				var normals = documentNode.GetNormals(geometryId, vertexIndices);
 				var tangents = documentNode.GetTangents(geometryId, vertexIndices);
 				var binormals = documentNode.GetBinormals(geometryId, vertexIndices);
 				var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices);
@@ -74,6 +75,22 @@ namespace UkooLabs.FbxSharpie.Tests
 
 				var hasBinormals = documentNode.GetGeometryHasBinormals(geometryId);
 				Assert.True(expectedHasBinormal == hasBinormals, $"HasBinormal expected {expectedHasBinormal}");
+
+				var fbxIndexer = new FbxIndexer();
+				for (var i = 0; i < vertices.Length; i++)
+				{
+					var vertex = new FbxVertex
+					{
+						Position = vertices[i],
+						Normal = normals[i],
+						Tangent = tangents[i],
+						Binormal = binormals[i],
+						TexCoord = texCoords[i]
+					};
+					fbxIndexer.AddVertex(vertex);
+				}
+				fbxIndexer.Index(out var indexedVertices, out var indexedIndices);
+				var a = 1;
 			}
 		}
 

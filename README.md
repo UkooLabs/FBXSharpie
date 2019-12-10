@@ -53,6 +53,7 @@ class FbxExample
 		{
 			var vertexIndices = documentNode.GetVertexIndices(geometryId);
 			var vertices = documentNode.GetVertices(geometryId, vertexIndices);
+			var normals = documentNode.GetNormals(geometryId, vertexIndices);
 			var tangents = documentNode.GetTangents(geometryId, vertexIndices);
 			var binormals = documentNode.GetBinormals(geometryId, vertexIndices);
 			var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices);
@@ -62,6 +63,21 @@ class FbxExample
 			var hasTangents = documentNode.GetGeometryHasTangents(geometryId);
 			var hasBinormals = documentNode.GetGeometryHasBinormals(geometryId);
 		}
+
+		var fbxIndexer = new FbxIndexer();
+		for (var i = 0; i < vertices.Length; i++)
+		{
+			var vertex = new FbxVertex
+			{
+				Position = vertices[i],
+				Normal = normals[i],
+				Tangent = tangents[i],
+				Binormal = binormals[i],
+				TexCoord = texCoords[i]
+			};
+			fbxIndexer.AddVertex(vertex);
+		}
+		fbxIndexer.Index(out var indexedVertices, out var indexedIndices);
 	}
 }
 ```

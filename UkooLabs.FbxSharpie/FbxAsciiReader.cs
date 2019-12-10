@@ -130,8 +130,7 @@ namespace UkooLabs.FbxSharpie
 
 			public override bool Equals(object obj)
 			{
-				var id = obj as Identifier;
-				if (id != null)
+				if (obj is Identifier id)
 				{
 					return String == id.String;
 				}

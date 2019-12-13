@@ -2,6 +2,8 @@
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
+using UkooLabs.FbxSharpie.Extensions;
+using UkooLabs.FbxSharpie.Tokens;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -10,11 +12,9 @@ namespace UkooLabs.FbxSharpie
 	/// </summary>
 	public class FbxAsciiReader
 	{
-		private readonly Stream stream;
-		private readonly ErrorLevel errorLevel;
-
-		private int line = 1;
-		private int column = 1;
+		private readonly Stream _stream;
+		private readonly ErrorLevel _errorLevel;
+		private readonly FbxAsciiFileInfo _fbxAsciiFileInfo;
 
 		/// <summary>
 		/// Creates a new reader
@@ -23,13 +23,9 @@ namespace UkooLabs.FbxSharpie
 		/// <param name="errorLevel"></param>
 		public FbxAsciiReader(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
-			if(stream == null)
-			{
-				throw new ArgumentNullException(nameof(stream));
-			}
-
-			this.stream = stream;
-			this.errorLevel = errorLevel;
+			_fbxAsciiFileInfo = new FbxAsciiFileInfo();
+			_stream = stream ?? throw new ArgumentNullException(nameof(stream));
+			_errorLevel = errorLevel;
 		}
 
 		/// <summary>
@@ -41,118 +37,6 @@ namespace UkooLabs.FbxSharpie
 		/// and slow or crash the system as a result.
 		/// </remarks>
 		public int MaxArrayLength { get; set; } = (1 << 24);
-
-		// We read bytes a lot, so we should make a more efficient method here
-		// (The normal one makes a new byte array each time)
-
-		readonly byte[] singleChar = new byte[1];
-		private char? prevChar;
-		private bool endStream;
-		private bool wasCr;
-
-		// Reads a char, allows peeking and checks for end of stream
-		char ReadChar()
-		{
-			if (prevChar != null)
-			{
-				var c = prevChar.Value;
-				prevChar = null;
-				return c;
-			}
-			if (stream.Read(singleChar, 0, 1) < 1)
-			{
-				endStream = true;
-				return '\0';
-			}
-			var ch = (char)singleChar[0];
-			// Handle line and column numbers here
-			// This isn't terribly accurate, but good enough for diagnostics
-			if (ch == '\r')
-			{
-				wasCr = true;
-				line++;
-				column = 0;
-			} else
-			{
-				if (ch == '\n' && !wasCr)
-				{
-					line++;
-					column = 0;
-				}
-				wasCr = false;
-			}
-			column++;
-			return ch;
-		}
-
-		// Checks if a character is valid in a real number
-		static bool IsDigit(char c, bool first)
-		{
-			if (char.IsDigit(c))
-			{
-				return true;
-			}
-
-			switch (c)
-			{
-				case '-':
-				case '+':
-					return true;
-				case '.':
-				case 'e':
-				case 'E':
-				case 'X':
-				case 'x':
-					return !first;
-			}
-			return false;
-		}
-
-		static bool IsLineEnd(char c)
-		{
-			return c == '\r' || c == '\n';
-		}
-
-		// Token to mark the end of the stream
-		class EndOfStream
-		{
-			public override string ToString()
-			{
-				return "end of stream";
-			}
-		}
-
-		// Wrapper around a string to mark it as an identifier
-		// (as opposed to a string literal)
-		class Identifier
-		{
-			public readonly string String;
-
-			public override bool Equals(object obj)
-			{
-				if (obj is Identifier id)
-				{
-					return String == id.String;
-				}
-
-				return false;
-			}
-
-			public override int GetHashCode()
-			{
-				return String?.GetHashCode() ?? 0;
-			}
-
-			public Identifier(string str)
-			{
-				String = str;
-			}
-
-			public override string ToString()
-			{
-				return String + ":";
-			}
-		}
 
 		private object prevTokenSingle;
 
@@ -166,132 +50,37 @@ namespace UkooLabs.FbxSharpie
 				prevTokenSingle = null;
 				return ret;
 			}
-			var c = ReadChar();
-			if(endStream)
+
+			if(_stream.IsEndOfStream())
 			{
 				return new EndOfStream();
 			}
-
-			switch (c)
+			if (_stream.TryParseWhiteSpaceToken(_fbxAsciiFileInfo, out var _))
 			{
-				case ';': // Comments
-					do
-					{
-						c = ReadChar();
-					}
-					while (!IsLineEnd(c) && !endStream); // Skip a line
-					return null;
-				case '{': // Operators
-				case '}':
-				case '*':
-				case ':':
-				case ',':
-					return c;
-				case '"': // String literal
-					var sb1 = new StringBuilder();
-					while((c = ReadChar()) != '"')
-					{
-						if (endStream)
-						{
-							throw new FbxException(line, column,
-								"Unexpected end of stream; expecting end quote");
-						}
-
-						sb1.Append(c);
-					}
-					return sb1.ToString();
-				default:
-					if (char.IsWhiteSpace(c))
-					{
-						// Merge whitespace
-						do
-						{
-							c = ReadChar();
-						}
-						while (char.IsWhiteSpace(c) && !endStream);
-						if (!endStream)
-						{
-							prevChar = c;
-						}
-
-						return null;
-					}
-					if (IsDigit(c, true)) // Number
-					{
-						var sb2 = new StringBuilder();
-						do
-						{
-							sb2.Append(c);
-							c = ReadChar();
-						} while (IsDigit(c, false) && !endStream);
-						if(!endStream)
-						{
-							prevChar = c;
-						}
-
-						var str = sb2.ToString();
-						if (str.Contains("."))
-						{
-							if (str.Split('.', 'e', 'E')[1].Length > 6)
-							{
-								double d;
-								if (!double.TryParse(str, out d))
-								{
-									throw new FbxException(line, column,
-										"Invalid number");
-								}
-
-								return d;
-							} else
-							{
-								float f;
-								if (!float.TryParse(str, out f))
-								{
-									throw new FbxException(line, column,
-										"Invalid number");
-								}
-
-								return f;
-							}
-						}
-						long l;
-						if (!long.TryParse(str, out l))
-						{
-							throw new FbxException(line, column,
-								"Invalid integer");
-						}
-						// Check size and return the smallest possible
-						if (l >= byte.MinValue && l <= byte.MaxValue)
-						{
-							return (byte) l;
-						}
-
-						if (l >= int.MinValue && l <= int.MaxValue)
-						{
-							return (int) l;
-						}
-
-						return l;
-					}
-					if (char.IsLetter(c) || c == '_') // Identifier
-					{
-						var sb3 = new StringBuilder();
-						do
-						{
-							sb3.Append(c);
-							c = ReadChar();
-						} while ((char.IsLetterOrDigit(c) || c == '_') && !endStream);
-						if(!endStream)
-						{
-							prevChar = c;
-						}
-
-						return new Identifier(sb3.ToString());
-					}
-					break;
+				return null;
 			}
-			throw new FbxException(line, column,
-				"Unknown character " + c);
+			if (_stream.TryParseCommentToken(_fbxAsciiFileInfo, out var _))
+			{
+				return null;
+			}
+			if (_stream.TryParseOperatorToken(_fbxAsciiFileInfo, out var op))
+			{
+				return op;
+			}
+			if (_stream.TryParseNumberToken(_fbxAsciiFileInfo, out var value))
+			{
+				return value;
+			}
+			if (_stream.TryParseLiteralToken(_fbxAsciiFileInfo, out var literal))
+			{
+				return literal;
+			}
+			if (_stream.TryParseIdentifierToken(_fbxAsciiFileInfo, out var identifier))
+			{
+				return new Identifier(identifier);
+			}
+
+			throw new FbxException(_fbxAsciiFileInfo, $"Unknown character {_stream.PeekChar(_fbxAsciiFileInfo)}");
 		}
 
 		private object prevToken;
@@ -321,12 +110,11 @@ namespace UkooLabs.FbxSharpie
 				} while (colon == null);
 				if (!':'.Equals(colon))
 				{
-					if (id.String.Length > 1)
+					if (id.Value.Length > 1)
 					{
-						throw new FbxException(line, column,
-							"Unexpected '" + colon + "', expected ':' or a single-char literal");
+						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + colon + "', expected ':' or a single-char literal");
 					}
-					ret = id.String[0];
+					ret = id.Value[0];
 					prevTokenSingle = colon;
 				}
 			}
@@ -338,8 +126,7 @@ namespace UkooLabs.FbxSharpie
 			var t = ReadToken();
 			if (!token.Equals(t))
 			{
-				throw new FbxException(line, column,
-					"Unexpected '" + t + "', expected " + token);
+				throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + t + "', expected " + token);
 			}
 		}
 
@@ -371,20 +158,17 @@ namespace UkooLabs.FbxSharpie
 			}
 			else
 			{
-				throw new FbxException(line, column,
-					"Unexpected '" + len + "', expected an integer");
+				throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + len + "', expected an integer");
 			}
 
 			if (l < 0)
 			{
-				throw new FbxException(line, column,
-					"Invalid array length " + l);
+				throw new FbxException(_fbxAsciiFileInfo, "Invalid array length " + l);
 			}
 
 			if (l > MaxArrayLength)
 			{
-				throw new FbxException(line, column,
-					"Array length " + l + " higher than permitted maximum " + MaxArrayLength);
+				throw new FbxException(_fbxAsciiFileInfo, "Array length " + l + " higher than permitted maximum " + MaxArrayLength);
 			}
 
 			ExpectToken('{');
@@ -402,8 +186,7 @@ namespace UkooLabs.FbxSharpie
 				{
 					if (!','.Equals(token))
 					{
-						throw new FbxException(line, column,
-							"Unexpected '" + token + "', expected ','");
+						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected ','");
 					}
 					expectComma = false;
 					token = ReadToken();
@@ -411,9 +194,9 @@ namespace UkooLabs.FbxSharpie
 				}
 				if (pos >= array.Length)
 				{
-					if (errorLevel >= ErrorLevel.Checked)
+					if (_errorLevel >= ErrorLevel.Checked)
 					{
-						throw new FbxException(line, column,
+						throw new FbxException(_fbxAsciiFileInfo,
 							"Too many elements in array");
 					}
 					token = ReadToken();
@@ -462,16 +245,16 @@ namespace UkooLabs.FbxSharpie
 				}
 				else
 				{
-					throw new FbxException(line, column, "Unexpected '" + token + "', expected a number");
+					throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected a number");
 				}
 
 				array[pos++] = d;
 				expectComma = true;
 				token = ReadToken();
 			}
-			if(pos < array.Length && errorLevel >= ErrorLevel.Checked)
+			if(pos < array.Length && _errorLevel >= ErrorLevel.Checked)
 			{
-				throw new FbxException(line, column,
+				throw new FbxException(_fbxAsciiFileInfo,
 					"Too few elements in array - expected " + (array.Length - pos) + " more");
 			}
 
@@ -529,18 +312,17 @@ namespace UkooLabs.FbxSharpie
 		public FbxNode ReadNode()
 		{
 			var first = ReadToken();
-			var id = first as Identifier;
-			if (id == null)
+			if (!(first is Identifier id))
 			{
 				if (first is EndOfStream)
 				{
 					return null;
 				}
 
-				throw new FbxException(line, column,
+				throw new FbxException(_fbxAsciiFileInfo,
 					"Unexpected '" + first + "', expected an identifier");
 			}
-			var node = new FbxNode {Name = id.String};
+			var node = new FbxNode {Name = id.Value};
 
 			// Read properties
 			object token = ReadToken();
@@ -551,7 +333,7 @@ namespace UkooLabs.FbxSharpie
 				{
 					if (!','.Equals(token))
 					{
-						throw new FbxException(line, column, "Unexpected '" + token + "', expected a ','");
+						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected a ','");
 					}
 					expectComma = false;
 					token = ReadToken();
@@ -567,7 +349,7 @@ namespace UkooLabs.FbxSharpie
 						case '}':
 						case ':':
 						case ',':
-							throw new FbxException(line, column, "Unexpected '" + c + "' in property list");
+							throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + c + "' in property list");
 					}
 				}
 				node.AddProperty(new FbxValue(token));
@@ -607,22 +389,13 @@ namespace UkooLabs.FbxSharpie
 
 			// Read version string
 			const string versionString = @"; FBX (\d)\.(\d)\.(\d) project file";
-            char c;
-			do
-			{
-				c = ReadChar();
-			}
-			while (char.IsWhiteSpace(c));
+
+			_stream.TryParseWhiteSpaceToken(_fbxAsciiFileInfo, out var _);
+
 			bool hasVersionString = false;
-			if (c == ';')
+			if (_stream.TryParseCommentToken(_fbxAsciiFileInfo, out var comment))
 			{
-				var sb = new StringBuilder();
-				do
-				{
-					sb.Append(c);
-					c = ReadChar();
-				} while (!IsLineEnd(c) && !endStream);
-				var match = Regex.Match(sb.ToString(), versionString);
+				var match = Regex.Match(comment, versionString);
 				hasVersionString = match.Success;
 				if(hasVersionString)
 				{
@@ -633,10 +406,10 @@ namespace UkooLabs.FbxSharpie
 					);
 				}
 			}
-			if(!hasVersionString && errorLevel >= ErrorLevel.Strict)
+
+			if(!hasVersionString && _errorLevel >= ErrorLevel.Strict)
 			{
-				throw new FbxException(line, column,
-					"Invalid version string; first line must match \"" + versionString + "\"");
+				throw new FbxException(_fbxAsciiFileInfo, "Invalid version string; first line must match \"" + versionString + "\"");
 			}
 
 			FbxNode node;

@@ -24,8 +24,19 @@ namespace UkooLabs.FbxSharpie
 		/// <param name="line"></param>
 		/// <param name="column"></param>
 		/// <param name="message"></param>
-		public FbxException(int line, int column, string message) :
-			base($"{message}, near line {line} column {column}")
+		//public FbxException(int line, int column, string message) :
+		//	base($"{message}, near line {line} column {column}")
+		//{
+		//}
+
+		/// <summary>
+		/// An error in a text file
+		/// </summary>
+		/// <param name="line"></param>
+		/// <param name="column"></param>
+		/// <param name="message"></param>
+		public FbxException(FbxAsciiFileInfo fbxAsciiFileInfo, string message) :
+			base($"{message}, near line {fbxAsciiFileInfo.Line} column {fbxAsciiFileInfo.Column}")
 		{
 		}
 

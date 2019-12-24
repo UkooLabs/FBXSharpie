@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace UkooLabs.FbxSharpie.Tokens
+﻿namespace UkooLabs.FbxSharpie.Tokens
 {
 	internal class CommentToken : Token
 	{

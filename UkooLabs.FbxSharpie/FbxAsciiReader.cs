@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using UkooLabs.FbxSharpie.Extensions;

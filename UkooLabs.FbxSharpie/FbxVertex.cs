@@ -7,11 +7,11 @@ namespace UkooLabs.FbxSharpie
 	{
 		public const uint SizeInBytes = 56;
 
-		public readonly Vector3 Position;
-		public readonly Vector2 TexCoord;
-		public readonly Vector3 Normal;
-		public readonly Vector3 Tangent;
-		public readonly Vector3 Binormal;
+		public Vector3 Position { get; }
+		public Vector2 TexCoord { get; }
+		public Vector3 Normal { get; }
+		public Vector3 Tangent { get; }
+		public Vector3 Binormal { get; }
 
 		public FbxVertex(Vector3 position, Vector2 texCoord, Vector3 normal, Vector3 tangent, Vector3 binormal)
 		{

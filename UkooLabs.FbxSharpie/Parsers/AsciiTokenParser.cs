@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using UkooLabs.FbxSharpie.Extensions;
 using UkooLabs.FbxSharpie.Tokens;
 using UkooLabs.FbxSharpie.Tokens.Value;

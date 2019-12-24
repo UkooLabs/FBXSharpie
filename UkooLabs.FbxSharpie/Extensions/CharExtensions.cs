@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace UkooLabs.FbxSharpie.Extensions
+﻿namespace UkooLabs.FbxSharpie.Extensions
 {
 	public static class CharExtensions
 	{

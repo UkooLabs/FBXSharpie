@@ -2,7 +2,6 @@ using System.IO;
 using Xunit;
 using System.Reflection;
 using System.Numerics;
-using System.Collections.Generic;
 
 namespace UkooLabs.FbxSharpie.Tests
 {

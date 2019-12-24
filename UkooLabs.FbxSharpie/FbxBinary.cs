@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UkooLabs.FbxSharpie.Extensions;
-using UkooLabs.FbxSharpie.Tokens;
 
 namespace UkooLabs.FbxSharpie
 {

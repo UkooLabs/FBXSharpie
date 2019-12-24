@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using UkooLabs.FbxSharpie.Tokens;
 using UkooLabs.FbxSharpie.Tokens.Value;
 using UkooLabs.FbxSharpie.Tokens.ValueArray;

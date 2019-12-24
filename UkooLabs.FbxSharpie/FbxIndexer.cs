@@ -30,7 +30,7 @@ namespace UkooLabs.FbxSharpie
 
 		public void Index(out FbxVertex[] vertices, out int[] indices)
 		{
-			Index(out vertices,out indices);
+			Index(0, out vertices,out indices);
 		}
 
 		public void Index(long materialId, out FbxVertex[] vertices, out int[] indices)

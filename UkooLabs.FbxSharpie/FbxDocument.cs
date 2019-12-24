@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using UkooLabs.FbxSharpie.Extensions;
+using UkooLabs.FbxSharpie.Tokens;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -24,7 +26,7 @@ namespace UkooLabs.FbxSharpie
 
 		private string GeometryName => Version >= FbxVersion.v7_0 ? "Geometry" : "Model";
 
-		private FbxNode GetNodeWithValue(FbxNode[] nodes, object value)
+		private FbxNode GetNodeWithValue(FbxNode[] nodes, Token value)
         {
             foreach (var node in nodes)
             {
@@ -32,7 +34,7 @@ namespace UkooLabs.FbxSharpie
                 {
                     continue;
                 }
-                if (node.Value.AsObject.Equals(value))
+                if (node.Value.Equals(value))
                 {
                     return node;
                 }
@@ -49,7 +51,7 @@ namespace UkooLabs.FbxSharpie
                 {
                     continue;
                 }
-                if (node.Name == name)
+                if (node.Identifier.Value == name)
                 {
                     nodeList.Add(node);
                 }
@@ -58,41 +60,13 @@ namespace UkooLabs.FbxSharpie
             return nodeList.ToArray();
         }
 
-        private bool HasConnection(long value1, long value2)
-        {
-            var connections = GetRelative("Connections").Nodes;
-            return connections.Any(c => c != null && c.Properties[1].GetAsLong() == value1 && c.Properties[2].GetAsLong() == value2);
-        }
 
         private int NormalizeIndex(int index)
         {
             return index < 0 ? (index + 1) * -1 : index;
         }
 
-        private FbxNode[] GetMaterialNodesForGeometry(long geometryId)
-        {
-			var materialNodes = new List<FbxNode>();
-            var models = GetFbxNodes("Model", this);
-            var materials = GetFbxNodes("Material", this);
-            foreach (var model in models)
-            {
-                var modelId = model.Value.GetAsLong();
-                if (HasConnection(geometryId, modelId))
-                {
-                    foreach (var material in materials)
-                    {
-                        var materialId = material.Value.GetAsLong();
-                        if (HasConnection(materialId, modelId))
-                        {
-                            materialNodes.Add(material);
-                        }
-                    }
-                }
-            }
-            return materialNodes.ToArray();
-        }
-
-
+      
 
 
 
@@ -100,7 +74,17 @@ namespace UkooLabs.FbxSharpie
 		{
 			var geometryNode = GetGeometry(geometryId);
 			var polygonVertexIndexNode = geometryNode.GetRelative("PolygonVertexIndex");
-			var vertexIndices = Version >= FbxVersion.v7_0 ? polygonVertexIndexNode.Value.GetAsIntArray() : polygonVertexIndexNode.PropertiesToIntArray();
+
+			int[] vertexIndices;
+
+			if (Version >= FbxVersion.v7_0)
+			{
+				polygonVertexIndexNode.Value.TryGetAsIntArray(out vertexIndices);
+			}
+			else
+			{
+				vertexIndices = polygonVertexIndexNode.PropertiesToIntArray();
+			}
 
 			var result = new List<int>();
 
@@ -256,7 +240,17 @@ namespace UkooLabs.FbxSharpie
 		{
 			var geometryNode = GetGeometry(geometryId);
 			var verticesNode = geometryNode.GetRelative("Vertices");
-			var vertices = Version >= FbxVersion.v7_0 ? verticesNode.Value.GetAsFloatArray() : verticesNode.PropertiesToFloatArray();
+
+			float[] vertices;
+			if (Version >= FbxVersion.v7_0)
+			{
+				verticesNode.Value.TryGetAsFloatArray(out vertices);
+			}
+			else
+			{
+				vertices = verticesNode.PropertiesToFloatArray();
+			}
+
 			var result = new List<Vector3>();
 			for (var i = 0; i < vertexIndices.Length; i++)
 			{
@@ -273,8 +267,8 @@ namespace UkooLabs.FbxSharpie
 			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsFloatArray() : layerTypeNode?.PropertiesToFloatArray();
 			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
 			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
-			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.AsString;
-			referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.AsString;
+			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
+			referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
 		}
 
 		private void GetLayerIntValues(long geometryId, string layerElement, string layerName, string layerIndexName, out int[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
@@ -285,8 +279,8 @@ namespace UkooLabs.FbxSharpie
 			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsIntArray() : layerTypeNode?.PropertiesToIntArray();
 			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
 			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
-			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.AsString;
-			referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.AsString;
+			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
+			referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
 		}
 
 		public Vector3[] GetNormals(long geometryId, int[] vertexIndices)
@@ -443,14 +437,14 @@ namespace UkooLabs.FbxSharpie
 		{
 			var materialNode = GetMaterial(materialId);
 			var property = materialNode.GetPropertyWithName("Material");
-			return property.AsString.Split(new string[] { "::" }, StringSplitOptions.None)[1];
+			return property.GetAsString().Split(new string[] { "::" }, StringSplitOptions.None)[1];
 		}
 
 		public Vector4 GetMaterialDiffuseColor(long materialId)
 		{
 			var materialNode = GetMaterial(materialId);
 			var materialProperties = materialNode.GetRelative(PropertiesName);
-			var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, "DiffuseColor");
+			var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, new StringToken("DiffuseColor"));
 			if (Version >= FbxVersion.v7_0)
 			{
 				var alpha = diffuseProperty.Properties.Length > 7 ? diffuseProperty.Properties[7].GetAsFloat() : 1.0f;
@@ -488,8 +482,12 @@ namespace UkooLabs.FbxSharpie
 		public double GetScaleFactor()
         {
             var properties = Version >= FbxVersion.v7_0 ? GetRelative($"GlobalSettings/{PropertiesName}") : GetRelative($"Objects/GlobalSettings/{PropertiesName}");
-            var unitScaleFactor = GetNodeWithValue(properties.Nodes, "UnitScaleFactor");
-            return unitScaleFactor.Properties[Version >= FbxVersion.v7_0 ? 4 : 3].GetAsDouble();
+            var unitScaleFactor = GetNodeWithValue(properties.Nodes, new StringToken("UnitScaleFactor"));
+            if (!unitScaleFactor.Properties[Version >= FbxVersion.v7_0 ? 4 : 3].TryGetAsDouble(out var doubleValue))
+			{
+				throw new NotSupportedException();
+			}
+			return doubleValue;
         }
     }
 }

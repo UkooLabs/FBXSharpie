@@ -6,9 +6,19 @@ namespace UkooLabs.FbxSharpie.Extensions
 {
 	public static class CharExtensions
 	{
+		public static bool IsLineFeed(this char c)
+		{
+			return c == '\n';
+		}
+
+		public static bool IsCarriageReturn(this char c)
+		{
+			return c == '\r';
+		}
+
 		public static bool IsLineEnd(this char c)
 		{
-			return c == '\r' || c == '\n';
+			return c.IsCarriageReturn() || c.IsLineFeed();
 		}
 
 		public static bool IsIdentifierChar(this char c)

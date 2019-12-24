@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Tokens.Value;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -8,7 +10,7 @@ namespace UkooLabs.FbxSharpie
 	/// </summary>
 	public class FbxNode : FbxNodeList
 	{
-        private readonly List<FbxValue> _properties = new List<FbxValue>();
+        private readonly List<Token> _properties = new List<Token>();
 
 		/// <summary>
 		/// The node name, which is often a class type
@@ -16,7 +18,7 @@ namespace UkooLabs.FbxSharpie
 		/// <remarks>
 		/// The name must be smaller than 256 characters to be written to a binary stream
 		/// </remarks>
-		public string Name { get; set; }
+		public IdentifierToken Identifier { get; }
 
         /// <summary>
         /// The list of properties associated with the node
@@ -24,17 +26,23 @@ namespace UkooLabs.FbxSharpie
         /// <remarks>
         /// Supported types are primitives (apart from byte and char),arrays of primitives, and strings
         /// </remarks>
-        public FbxValue[] Properties => _properties.ToArray();
+        public Token[] Properties => _properties.ToArray();
 
-		public FbxValue GetPropertyWithName(string name)
+		public FbxNode(IdentifierToken identifier)
+		{
+			Identifier = identifier;
+		}
+
+		public Token GetPropertyWithName(string name)
 		{
 			foreach (var property in _properties)
 			{
-				if (!property.IsString)
+				if (property.TokenType != TokenTypeEnum.String)
 				{
 					continue;
 				}
-				var propertyName = property.AsString?.Split(new string[] { "::" }, StringSplitOptions.None)[0];
+				var stringToken = (StringToken)property;
+				var propertyName = stringToken.Value?.Split(new string[] { "::" }, StringSplitOptions.None)[0];
 				if (string.Equals(propertyName, name, StringComparison.CurrentCultureIgnoreCase))
 				{
 					return property;
@@ -43,7 +51,7 @@ namespace UkooLabs.FbxSharpie
 			return null;
 		}
 
-        public void AddProperty(FbxValue value)
+        public void AddProperty(Token value)
         {
             _properties.Add(value);
         }
@@ -53,7 +61,30 @@ namespace UkooLabs.FbxSharpie
 			var values = new List<int>();
 			foreach (var property in Properties)
 			{
-				values.Add(property.GetAsInt());
+				if (property.TokenType != TokenTypeEnum.Value && property.ValueType != ValueTypeEnum.None)
+				{
+					continue;
+				}
+				if (property.ValueType == ValueTypeEnum.Boolean && property is BooleanToken booleanToken)
+				{
+					values.Add(booleanToken.Value ? 1 : 0);
+				}
+				else if (property.ValueType == ValueTypeEnum.Integer && property is IntegerToken integerToken)
+				{
+					values.Add(integerToken.Value);
+				}
+				else if (property.ValueType == ValueTypeEnum.Long && property is LongToken longToken)
+				{
+					values.Add((int)longToken.Value);
+				}
+				else if (property.ValueType == ValueTypeEnum.Float && property is FloatToken floatToken)
+				{
+					values.Add((int)floatToken.Value);
+				}
+				else if (property.ValueType == ValueTypeEnum.Double && property is DoubleToken doubleToken)
+				{
+					values.Add((int)doubleToken.Value);
+				}
 			}
 			return values.ToArray();
 		}
@@ -63,7 +94,30 @@ namespace UkooLabs.FbxSharpie
 			var values = new List<float>();
 			foreach (var property in Properties)
 			{
-				values.Add(property.GetAsFloat());
+				if (property.TokenType != TokenTypeEnum.Value && property.ValueType != ValueTypeEnum.None)
+				{
+					continue;
+				}
+				if (property.ValueType == ValueTypeEnum.Boolean && property is BooleanToken booleanToken)
+				{
+					values.Add(booleanToken.Value ? 1 : 0);
+				}
+				else if (property.ValueType == ValueTypeEnum.Integer && property is IntegerToken integerToken)
+				{
+					values.Add(integerToken.Value);
+				}
+				else if (property.ValueType == ValueTypeEnum.Long && property is LongToken longToken)
+				{
+					values.Add(longToken.Value);
+				}
+				else if (property.ValueType == ValueTypeEnum.Float && property is FloatToken floatToken)
+				{
+					values.Add(floatToken.Value);
+				}
+				else if (property.ValueType == ValueTypeEnum.Double && property is DoubleToken doubleToken)
+				{
+					values.Add((float)doubleToken.Value);
+				}
 			}
 			return values.ToArray();
 		}
@@ -71,7 +125,7 @@ namespace UkooLabs.FbxSharpie
 		/// <summary>
 		/// The first property element
 		/// </summary>
-		public FbxValue Value
+		public Token Value
 		{
 			get { return Properties.Length < 1 ? null : Properties[0]; }
 			set
@@ -90,6 +144,6 @@ namespace UkooLabs.FbxSharpie
 		/// <summary>
 		/// Whether the node is empty of data
 		/// </summary>
-		public bool IsEmpty => string.IsNullOrEmpty(Name) && Properties.Length == 0 && Nodes.Length == 0;
+		public bool IsEmpty => string.IsNullOrEmpty(Identifier.Value) && Properties.Length == 0 && Nodes.Length == 0;
 	}
 }

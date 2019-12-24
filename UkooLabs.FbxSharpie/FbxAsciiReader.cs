@@ -4,6 +4,10 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UkooLabs.FbxSharpie.Extensions;
 using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Parsers;
+using System.Collections.Generic;
+using UkooLabs.FbxSharpie.Tokens.ValueArray;
+using System.Linq;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -12,9 +16,9 @@ namespace UkooLabs.FbxSharpie
 	/// </summary>
 	public class FbxAsciiReader
 	{
-		private readonly Stream _stream;
-		private readonly ErrorLevel _errorLevel;
 		private readonly FbxAsciiFileInfo _fbxAsciiFileInfo;
+		private readonly ErrorLevel _errorLevel;
+		private readonly Stack<Token> _tokenStack;
 
 		/// <summary>
 		/// Creates a new reader
@@ -23,9 +27,9 @@ namespace UkooLabs.FbxSharpie
 		/// <param name="errorLevel"></param>
 		public FbxAsciiReader(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
-			_fbxAsciiFileInfo = new FbxAsciiFileInfo();
-			_stream = stream ?? throw new ArgumentNullException(nameof(stream));
+			_fbxAsciiFileInfo = new FbxAsciiFileInfo(stream ?? throw new ArgumentNullException(nameof(stream)));
 			_errorLevel = errorLevel;
+			_tokenStack = new Stack<Token>();
 		}
 
 		/// <summary>
@@ -38,90 +42,47 @@ namespace UkooLabs.FbxSharpie
 		/// </remarks>
 		public int MaxArrayLength { get; set; } = (1 << 24);
 
-		private object prevTokenSingle;
-
-		// Reads a single token, allows peeking
-		// Can return 'null' for a comment or whitespace
-		object ReadTokenSingle()
+		Token ReadToken()
 		{
-			if (prevTokenSingle != null)
+			while (_tokenStack.Count == 0)
 			{
-				var ret = prevTokenSingle;
-				prevTokenSingle = null;
-				return ret;
-			}
-
-			if(_stream.IsEndOfStream())
-			{
-				return new EndOfStream();
-			}
-			if (_stream.TryParseWhiteSpaceToken(_fbxAsciiFileInfo, out var _))
-			{
-				return null;
-			}
-			if (_stream.TryParseCommentToken(_fbxAsciiFileInfo, out var _))
-			{
-				return null;
-			}
-			if (_stream.TryParseOperatorToken(_fbxAsciiFileInfo, out var op))
-			{
-				return op;
-			}
-			if (_stream.TryParseNumberToken(_fbxAsciiFileInfo, out var value))
-			{
-				return value;
-			}
-			if (_stream.TryParseLiteralToken(_fbxAsciiFileInfo, out var literal))
-			{
-				return literal;
-			}
-			if (_stream.TryParseIdentifierToken(_fbxAsciiFileInfo, out var identifier))
-			{
-				return new Identifier(identifier);
-			}
-
-			throw new FbxException(_fbxAsciiFileInfo, $"Unknown character {_stream.PeekChar(_fbxAsciiFileInfo)}");
-		}
-
-		private object prevToken;
-
-		// Use a loop rather than recursion to prevent stack overflow
-		// Here we can also merge string+colon into an identifier,
-		// returning single-character bare strings (for C-type properties)
-		object ReadToken()
-		{
-			object ret;
-			if (prevToken != null)
-			{
-				ret = prevToken;
-				prevToken = null;
-				return ret;
-			}
-			do
-			{
-				ret = ReadTokenSingle();
-			} while (ret == null);
-			if (ret is Identifier id)
-			{
-				object colon;
-				do
+				if (_fbxAsciiFileInfo.IsEndOfStream())
 				{
-					colon = ReadTokenSingle();
-				} while (colon == null);
-				if (!':'.Equals(colon))
+					_tokenStack.Push(new Token(TokenTypeEnum.EndOfStream, ValueTypeEnum.None));
+				}
+				else if (AsciiTokenParser.TryConsumeWhiteSpace(_fbxAsciiFileInfo))
 				{
-					if (id.Value.Length > 1)
-					{
-						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + colon + "', expected ':' or a single-char literal");
-					}
-					ret = id.Value[0];
-					prevTokenSingle = colon;
+					continue;
+				}
+				else if (AsciiTokenParser.TryParseCommentToken(_fbxAsciiFileInfo, out var _))
+				{
+					continue;
+				}
+				else if (AsciiTokenParser.TryParseOperatorToken(_fbxAsciiFileInfo, out var operatorToken))
+				{
+					_tokenStack.Push(operatorToken);
+				}
+				else if (AsciiTokenParser.TryParseNumberToken(_fbxAsciiFileInfo, out var numberToken))
+				{
+					_tokenStack.Push(numberToken);
+				}
+				else if (AsciiTokenParser.TryParseStringToken(_fbxAsciiFileInfo, out var stringToken))
+				{
+					_tokenStack.Push(stringToken);
+				}
+				else if (AsciiTokenParser.TryParseIdentifierOrCharToken(_fbxAsciiFileInfo, out var token))
+				{
+					_tokenStack.Push(token);
+				}
+				else
+				{
+					throw new FbxException(_fbxAsciiFileInfo, $"Unknown character {_fbxAsciiFileInfo.PeekChar()}");
 				}
 			}
-			return ret;
+			return _tokenStack.Pop();
 		}
 
-		void ExpectToken(object token)
+		void ExpectToken(Token token)
 		{
 			var t = ReadToken();
 			if (!token.Equals(t))
@@ -133,58 +94,46 @@ namespace UkooLabs.FbxSharpie
 		private enum ArrayType
 		{
 			Byte = 0,
-			Int = 1,
+			Integer = 1,
 			Long = 2,
 			Float = 3,
 			Double = 4,
 		};
 
-		Array ReadArray()
+		Token ReadArray()
 		{
 			// Read array length and header
 			var len = ReadToken();
-			long l;
-			if (len is long)
+
+			if (!len.TryGetAsLong(out var arrayLength))
 			{
-				l = (long) len;
-			}
-			else if (len is int)
-			{
-				l = (int) len;
-			}
-			else if (len is byte)
-			{
-				l = (byte) len;
-			}
-			else
-			{
-				throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + len + "', expected an integer");
+				throw new FbxException(_fbxAsciiFileInfo, "Unexpected token type '" + len.TokenType + "', expected an integer");
 			}
 
-			if (l < 0)
+			if (arrayLength < 0)
 			{
-				throw new FbxException(_fbxAsciiFileInfo, "Invalid array length " + l);
+				throw new FbxException(_fbxAsciiFileInfo, "Invalid array length " + arrayLength);
 			}
 
-			if (l > MaxArrayLength)
+			if (arrayLength > MaxArrayLength)
 			{
-				throw new FbxException(_fbxAsciiFileInfo, "Array length " + l + " higher than permitted maximum " + MaxArrayLength);
+				throw new FbxException(_fbxAsciiFileInfo, "Array length " + arrayLength + " higher than permitted maximum " + MaxArrayLength);
 			}
 
-			ExpectToken('{');
-			ExpectToken(new Identifier("a"));
-			var array = new double[l];
+			ExpectToken(new Token(TokenTypeEnum.OpenBrace, ValueTypeEnum.None));
+			ExpectToken(new IdentifierToken("a"));
+			var array = new List<double>();
 
 			// Read array elements
 			bool expectComma = false;
-			object token = ReadToken();
+			Token token = ReadToken();
 			var arrayType = ArrayType.Byte;
-			long pos = 0;
-			while (!'}'.Equals(token))
+
+			while (token.TokenType != TokenTypeEnum.CloseBrace)
 			{
 				if (expectComma)
 				{
-					if (!','.Equals(token))
+					if (token.TokenType != TokenTypeEnum.Comma)
 					{
 						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected ','");
 					}
@@ -192,114 +141,72 @@ namespace UkooLabs.FbxSharpie
 					token = ReadToken();
 					continue;
 				}
-				if (pos >= array.Length)
+				if (array.Count > arrayLength)
 				{
 					if (_errorLevel >= ErrorLevel.Checked)
 					{
-						throw new FbxException(_fbxAsciiFileInfo,
-							"Too many elements in array");
+						throw new FbxException(_fbxAsciiFileInfo, "Too many elements in array");
 					}
 					token = ReadToken();
 					continue;
 				}
 
-				// Add element to the array, checking for the maximum
-				// size of any one element.
-				// (I'm not sure if this is the 'correct' way to do it, but it's the only
-				// logical one given the nature of the ASCII format)
-				double d;
-				if (token is byte)
+				if (token.TryGetAsDouble(out var value))
 				{
-					d = (byte)token;
-				}
-				else if (token is int)
-				{
-					d = (int)token;
-					if (arrayType < ArrayType.Int)
+					if (token.ValueType == ValueTypeEnum.Integer && arrayType < ArrayType.Integer)
 					{
-						arrayType = ArrayType.Int;
+						arrayType = ArrayType.Integer;
 					}
-				}
-				else if (token is long)
-				{
-					d = (long)token;
-					if (arrayType < ArrayType.Long)
+					else if (token.ValueType == ValueTypeEnum.Long && arrayType < ArrayType.Long)
 					{
 						arrayType = ArrayType.Long;
 					}
-				}
-				else if (token is float)
-				{
-					d = (float)token;
-					// A long can't be accurately represented by a float
-					arrayType = arrayType < ArrayType.Long
-						? ArrayType.Float : ArrayType.Double;
-				}
-				else if (token is double)
-				{
-					d = (double)token;
-					if (arrayType < ArrayType.Double)
+					else if (token.ValueType == ValueTypeEnum.Float)
+					{
+						arrayType = arrayType < ArrayType.Long ? ArrayType.Float : ArrayType.Double;
+					}
+					else if (token.ValueType == ValueTypeEnum.Double && arrayType < ArrayType.Double)
 					{
 						arrayType = ArrayType.Double;
 					}
+					array.Add(value);
 				}
 				else
 				{
-					throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected a number");
+					throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token.TokenType + "', expected a value");
 				}
 
-				array[pos++] = d;
 				expectComma = true;
 				token = ReadToken();
 			}
-			if(pos < array.Length && _errorLevel >= ErrorLevel.Checked)
+
+			if (array.Count < arrayLength && _errorLevel >= ErrorLevel.Checked)
 			{
-				throw new FbxException(_fbxAsciiFileInfo,
-					"Too few elements in array - expected " + (array.Length - pos) + " more");
+				throw new FbxException(_fbxAsciiFileInfo, "Too few elements in array - expected " + (arrayLength - array.Count) + " more");
 			}
 
 			// Convert the array to the smallest type we can see
-			Array ret;
+			Token ret;
 			switch (arrayType)
 			{
 				case ArrayType.Byte:
-					var bArray = new byte[array.Length];
-					for (int i = 0; i < bArray.Length; i++)
-					{
-						bArray[i] = (byte)array[i];
-					}
-
-					ret = bArray;
+					var byteArray = (from item in array select (byte)item).ToArray();
+					ret = new ByteArrayToken(byteArray);
 					break;
-				case ArrayType.Int:
-					var iArray = new int[array.Length];
-					for (int i = 0; i < iArray.Length; i++)
-					{
-						iArray[i] = (int)array[i];
-					}
-
-					ret = iArray;
+				case ArrayType.Integer:
+					var integerArray = (from item in array select (int)item).ToArray();
+					ret = new IntegerArrayToken(integerArray);
 					break;
 				case ArrayType.Long:
-					var lArray = new long[array.Length];
-					for (int i = 0; i < lArray.Length; i++)
-					{
-						lArray[i] = (long)array[i];
-					}
-
-					ret = lArray;
+					var longArray = (from item in array select (long)item).ToArray();
+					ret = new LongArrayToken(longArray);
 					break;
 				case ArrayType.Float:
-					var fArray = new float[array.Length];
-					for (int i = 0; i < fArray.Length; i++)
-					{
-						fArray[i] = (long)array[i];
-					}
-
-					ret = fArray;
+					var floatArray = (from item in array select (float)item).ToArray();
+					ret = new FloatArrayToken(floatArray);
 					break;
 				default:
-					ret = array;
+					ret = new DoubleArrayToken(array.ToArray());
 					break;
 			}
 			return ret;
@@ -312,26 +219,24 @@ namespace UkooLabs.FbxSharpie
 		public FbxNode ReadNode()
 		{
 			var first = ReadToken();
-			if (!(first is Identifier id))
+			if (!(first is IdentifierToken id))
 			{
-				if (first is EndOfStream)
+				if (first is Token tok && tok.TokenType == TokenTypeEnum.EndOfStream)
 				{
 					return null;
 				}
-
-				throw new FbxException(_fbxAsciiFileInfo,
-					"Unexpected '" + first + "', expected an identifier");
+				throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + first + "', expected an identifier");
 			}
-			var node = new FbxNode {Name = id.Value};
+			var node = new FbxNode(id);
 
 			// Read properties
-			object token = ReadToken();
+			Token token = ReadToken();
 			bool expectComma = false;
-			while (!'{'.Equals(token) && !(token is Identifier) && !'}'.Equals(token))
+			while (token.TokenType != TokenTypeEnum.OpenBrace && token.TokenType != TokenTypeEnum.Identifier && token.TokenType != TokenTypeEnum.CloseBrace)
 			{
 				if (expectComma)
 				{
-					if (!','.Equals(token))
+					if (token.TokenType != TokenTypeEnum.Comma)
 					{
 						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected a ','");
 					}
@@ -339,35 +244,32 @@ namespace UkooLabs.FbxSharpie
 					token = ReadToken();
 					continue;
 				}
-				if (token is char c)
+
+				if (token.TokenType == TokenTypeEnum.Asterix)
 				{
-					switch (c)
-					{
-						case '*':
-							token = ReadArray();
-							break;
-						case '}':
-						case ':':
-						case ',':
-							throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + c + "' in property list");
-					}
+					token = ReadArray();
 				}
-				node.AddProperty(new FbxValue(token));
+				else if (token.TokenType == TokenTypeEnum.CloseBrace || token.TokenType == TokenTypeEnum.Comma)
+				{
+					throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token.TokenType + "' in property list");
+				}
+				
+				node.AddProperty(token);
 				expectComma = true; // The final comma before the open brace isn't required
 				token = ReadToken();
 			}
 			// TODO: Merge property list into an array as necessary
 			// Now we're either at an open brace, close brace or a new node
-			if (token is Identifier || '}'.Equals(token))
+			if (token.TokenType == TokenTypeEnum.Identifier || token.TokenType == TokenTypeEnum.CloseBrace)
 			{
-				prevToken = token;
+				_tokenStack.Push(token);
 				return node;
 			}
 			// The while loop can't end unless we're at an open brace, so we can continue right on
-			object endBrace = ReadToken();
-			while(!'}'.Equals(endBrace))
+			Token endBrace = ReadToken();
+			while(endBrace.TokenType != TokenTypeEnum.CloseBrace)
 			{
-				prevToken = endBrace; // If it's not an end brace, the next node will need it
+				_tokenStack.Push(endBrace);
 				node.AddNode(ReadNode());
 				endBrace = ReadToken();
 			}
@@ -390,12 +292,12 @@ namespace UkooLabs.FbxSharpie
 			// Read version string
 			const string versionString = @"; FBX (\d)\.(\d)\.(\d) project file";
 
-			_stream.TryParseWhiteSpaceToken(_fbxAsciiFileInfo, out var _);
+			AsciiTokenParser.TryConsumeWhiteSpace(_fbxAsciiFileInfo);
 
 			bool hasVersionString = false;
-			if (_stream.TryParseCommentToken(_fbxAsciiFileInfo, out var comment))
+			if (AsciiTokenParser.TryParseCommentToken(_fbxAsciiFileInfo, out var commentToken))
 			{
-				var match = Regex.Match(comment, versionString);
+				var match = Regex.Match(commentToken.Value, versionString);
 				hasVersionString = match.Success;
 				if(hasVersionString)
 				{

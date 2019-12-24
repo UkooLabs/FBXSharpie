@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UkooLabs.FbxSharpie.Extensions;
+using UkooLabs.FbxSharpie.Tokens;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -102,13 +104,13 @@ namespace UkooLabs.FbxSharpie
 			var elementNode = timestamp[element];
 			if (elementNode != null && elementNode.Properties.Length > 0)
 			{
-				var prop = elementNode.Properties[0].AsObject;
-				if (prop is int || prop is long)
+				var prop = elementNode.Properties[0];
+				if (prop.TryGetAsLong(out var longValue))
 				{
-					return (int)prop;
+					return (int)longValue;
 				}
 			}
-			throw new FbxException(timePath, -1, "Timestamp has no " + element);
+			throw new FbxException(-1, "Timestamp has no " + element);
 		}
 
 		/// <summary>
@@ -121,7 +123,7 @@ namespace UkooLabs.FbxSharpie
 			var timestamp = document.GetRelative($"{timePath1}/{timePath2}");
 			if (timestamp == null)
 			{
-				throw new FbxException(timePath, -1, "No creation timestamp");
+				throw new FbxException(-1, "No creation timestamp");
 			}
 
 			try
@@ -138,7 +140,7 @@ namespace UkooLabs.FbxSharpie
 			}
 			catch (ArgumentOutOfRangeException)
 			{
-				throw new FbxException(timePath, -1, "Invalid timestamp");
+				throw new FbxException(-1, "Invalid timestamp");
 			}
 		}
 

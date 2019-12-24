@@ -2,6 +2,9 @@
 using System.Text;
 using System.IO;
 using System.IO.Compression;
+using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Tokens.ValueArray;
+using UkooLabs.FbxSharpie.Tokens.Value;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -40,33 +43,33 @@ namespace UkooLabs.FbxSharpie
 		}
 
 		// Reads a single property
-		FbxValue ReadProperty()
+		Token ReadProperty()
 		{
 			var dataType = (char) stream.ReadByte();
 			switch (dataType)
 			{
 				case 'Y':
-					return new FbxValue(stream.ReadInt16());
+					return new ShortToken(stream.ReadInt16());
 				case 'C':
-					return new FbxValue((char)stream.ReadByte());
+					return new BooleanToken(stream.ReadByte() == 'T');
 				case 'I':
-					return new FbxValue(stream.ReadInt32());
+					return new IntegerToken(stream.ReadInt32());
 				case 'F':
-					return new FbxValue(stream.ReadSingle());
+					return new FloatToken(stream.ReadSingle());
 				case 'D':
-					return new FbxValue(stream.ReadDouble());
+					return new DoubleToken(stream.ReadDouble());
 				case 'L':
-					return new FbxValue(stream.ReadInt64());
+					return new LongToken(stream.ReadInt64());
 				case 'f':
-					return new FbxValue(ReadArray(br => br.ReadSingle(), typeof(float)));
+					return new FloatArrayToken(ReadArray<float>(br => br.ReadSingle()));
 				case 'd':
-					return new FbxValue(ReadArray(br => br.ReadDouble(), typeof(double)));
+					return new DoubleArrayToken(ReadArray<double>(br => br.ReadDouble()));
 				case 'l':
-					return new FbxValue(ReadArray(br => br.ReadInt64(), typeof(long)));
+					return new LongArrayToken(ReadArray<long>(br => br.ReadInt64()));
 				case 'i':
-					return new FbxValue(ReadArray(br => br.ReadInt32(), typeof(int)));
+					return new IntegerArrayToken(ReadArray<int>(br => br.ReadInt32()));
 				case 'b':
-					return new FbxValue(ReadArray(br => br.ReadBoolean(), typeof(bool)));
+					return new BooleanArrayToken(ReadArray<bool>(br => br.ReadBoolean()));
 				case 'S':
 					var len = stream.ReadInt32();
 					var str = len == 0 ? "" : Encoding.ASCII.GetString(stream.ReadBytes(len));
@@ -88,9 +91,9 @@ namespace UkooLabs.FbxSharpie
 						}
 						str = sb.ToString();
 					}
-					return new FbxValue(str);
+					return new StringToken(str);
 				case 'R':
-					return new FbxValue(stream.ReadBytes(stream.ReadInt32()));
+					return new ByteArrayToken(stream.ReadBytes(stream.ReadInt32()));
                 default:
 					throw new FbxException(stream.BaseStream.Position - 1,
 						"Invalid property data type `" + dataType + "'");
@@ -100,12 +103,12 @@ namespace UkooLabs.FbxSharpie
 
 
 		// Reads an array, decompressing it if required
-		Array ReadArray(ReadPrimitive readPrimitive, Type arrayType)
+		T[] ReadArray<T>(ReadPrimitive readPrimitive)
 		{
 			var len = stream.ReadInt32();
 			var encoding = stream.ReadInt32();
 			var compressedLen = stream.ReadInt32();
-			var ret = Array.CreateInstance(arrayType, len);
+			var ret = new T[len];
 			var s = stream;
 			var endPos = stream.BaseStream.Position + compressedLen;
 
@@ -113,7 +116,7 @@ namespace UkooLabs.FbxSharpie
 			{
 				for (int i = 0; i < len; i++)
 				{
-					ret.SetValue(readPrimitive(s), i);
+					ret[i] = (T)readPrimitive(s);
 				}
 				return ret;
 			}
@@ -157,7 +160,7 @@ namespace UkooLabs.FbxSharpie
 				{
 					for (int i = 0; i < len; i++)
 					{
-						ret.SetValue(readPrimitive(bs), i);
+						ret[i] = (T)readPrimitive(bs);
 					}
 				}
 				catch (InvalidDataException)
@@ -217,7 +220,7 @@ namespace UkooLabs.FbxSharpie
 				return null;
 			}
 
-			var node = new FbxNode {Name = name};
+			var node = new FbxNode(new IdentifierToken(name));
 
 			var propertyEnd = stream.BaseStream.Position + propertyListLen;
 			// Read properties

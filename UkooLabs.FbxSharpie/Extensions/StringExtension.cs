@@ -1,8 +1,11 @@
-﻿namespace UkooLabs.FbxSharpie.Extensions
+﻿using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Tokens.Value;
+
+namespace UkooLabs.FbxSharpie.Extensions
 {
 	internal static class StringExtension
 	{
-		public static bool TryParseNumberToken(this string value, out object number)
+		public static bool TryParseNumberToken(this string value, out Token numberToken)
 		{
 			if (value.Contains("."))
 			{
@@ -11,36 +14,31 @@
 				{
 					if (!double.TryParse(value, out var d))
 					{
-						number = null;
+						numberToken = null;
 						return false;
 					}
-					number = d;
+					numberToken = new DoubleToken(d);
 					return true;
 				}
 				if (!float.TryParse(value, out var f))
 				{
-					number = null;
+					numberToken = null;
 					return false;
 				}
-				number = f;
+				numberToken = new FloatToken(f);
 				return true;
 			}
 			if (!long.TryParse(value, out var l))
 			{
-				number = null;
+				numberToken = null;
 				return false;
-			}
-			if (l >= byte.MinValue && l <= byte.MaxValue)
-			{
-				number = (byte)l;
-				return true;
 			}
 			if (l >= int.MinValue && l <= int.MaxValue)
 			{
-				number = (int)l;
+				numberToken = new IntegerToken((int)l);
 				return true;
 			}
-			number = l;
+			numberToken = new LongToken(l);
 			return true;
 		}
 

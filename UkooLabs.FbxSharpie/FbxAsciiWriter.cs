@@ -3,6 +3,8 @@ using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Extensions;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -22,21 +24,10 @@ namespace UkooLabs.FbxSharpie
             this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
 		}
 
-		/// <summary>
-		/// The maximum line length in characters when outputting arrays
-		/// </summary>
-		/// <remarks>
-		/// Lines might end up being a few characters longer than this, visibly and otherwise,
-		/// so don't rely on it as a hard limit in code!
-		/// </remarks>
-		public int MaxLineLength { get; set; } = 260;
-
-		readonly Stack<string> nodePath = new Stack<string>();
 
 		// Adds the given node text to the string
-		void BuildString(FbxNode node, StringBuilder sb, bool writeArrayLength, int indentLevel = 0)
+		void BuildString(FbxNode node, StringBuilder sb, FbxVersion version, int indentLevel = 0)
 		{
-			nodePath.Push(node.Name ?? "");
 			int lineStart = sb.Length;
 			// Write identifier
 			for (int i = 0; i < indentLevel; i++)
@@ -44,13 +35,13 @@ namespace UkooLabs.FbxSharpie
 				sb.Append('\t');
 			}
 
-			sb.Append(node.Name).Append(':');
+			sb.Append(node.Identifier).Append(':');
 
 			// Write properties
 			var first = true;
 			for(int j = 0; j < node.Properties.Length; j++)
 			{
-				var p = node.Properties[j].AsObject;
+				var p = node.Properties[j];
 				if(p == null)
 				{
 					continue;
@@ -62,72 +53,8 @@ namespace UkooLabs.FbxSharpie
 				}
 
 				sb.Append(' ');
-				if (p is string)
-				{
-					sb.Append('"').Append(p).Append('"');
-				} else if (p is Array array)
-                {
-                    var elementType = p.GetType().GetElementType();
-                    // ReSharper disable once PossibleNullReferenceException
-                    // We know it's an array, so we don't need to check for null
-                    if (array.Rank != 1 || !elementType.GetTypeInfo().IsPrimitive)
-					{
-						throw new FbxException(nodePath, j,
-                            "Invalid array type " + p.GetType());
-					}
 
-					if (writeArrayLength)
-                    {
-                        sb.Append('*').Append(array.Length).Append(" {\n");
-                        lineStart = sb.Length;
-                        for (int i = -1; i < indentLevel; i++)
-						{
-							sb.Append('\t');
-						}
-
-						sb.Append("a: ");
-                    }
-                    bool pFirst = true;
-                    foreach (var v in (Array)p)
-                    {
-                        if (!pFirst)
-						{
-							sb.Append(',');
-						}
-
-						var vstr = v.ToString();
-                        if ((sb.Length - lineStart) + vstr.Length >= MaxLineLength)
-                        {
-                            sb.Append('\n');
-                            lineStart = sb.Length;
-                        }
-                        sb.Append(vstr);
-                        pFirst = false;
-                    }
-                    if (writeArrayLength)
-                    {
-                        sb.Append('\n');
-                        for (int i = 0; i < indentLevel; i++)
-						{
-							sb.Append('\t');
-						}
-
-						sb.Append('}');
-                    }
-                }
-                else if (p is char)
-				{
-					sb.Append((char)p);
-				}
-				else if (p.GetType().GetTypeInfo().IsPrimitive && p is IFormattable)
-				{
-					sb.Append(p);
-				}
-				else
-				{
-					throw new FbxException(nodePath, j,
-                        "Invalid property type " + p.GetType());
-				}
+				p.WriteAscii(version, sb, indentLevel, ref lineStart);
 
 				first = false;
 			}
@@ -143,7 +70,7 @@ namespace UkooLabs.FbxSharpie
 						continue;
 					}
 
-					BuildString(n, sb, writeArrayLength, indentLevel + 1);
+					BuildString(n, sb, version, indentLevel + 1);
 				}
 				for (int i = 0; i < indentLevel; i++)
 				{
@@ -153,8 +80,6 @@ namespace UkooLabs.FbxSharpie
 				sb.Append('}');
 			}
 			sb.Append('\n');
-
-			nodePath.Pop();
 		}
 
 		/// <summary>
@@ -179,7 +104,6 @@ namespace UkooLabs.FbxSharpie
 			var vRev = ((int) document.Version%100)/10;
 			sb.Append($"; FBX {vMajor}.{vMinor}.{vRev} project file\n\n");
 
-			nodePath.Clear();
 			foreach (var n in document.Nodes)
 			{
 				if (n == null)
@@ -187,7 +111,7 @@ namespace UkooLabs.FbxSharpie
 					continue;
 				}
 
-				BuildString(n, sb, document.Version >= FbxVersion.v7_1);
+				BuildString(n, sb, document.Version);
 				sb.Append('\n');
 			}
 			var b = Encoding.ASCII.GetBytes(sb.ToString());

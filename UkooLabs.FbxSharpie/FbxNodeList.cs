@@ -33,7 +33,7 @@ namespace UkooLabs.FbxSharpie
         /// </summary>
         /// <param name="name"></param>
         /// <returns>The child node, or null</returns>
-        public FbxNode this[string name] { get { return Nodes.FirstOrDefault(n => n != null && n.Name == name); } }
+        public FbxNode this[string name] { get { return Nodes.FirstOrDefault(n => n != null && n.Identifier.Value == name); } }
 
 		/// <summary>
 		/// Gets a child node, using a '/' separated path

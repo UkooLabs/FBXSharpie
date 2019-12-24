@@ -10,7 +10,6 @@ namespace UkooLabs.FbxSharpie.Tokens
 	{
 		EndOfStream,
 		Comment,
-		WhiteSpace,
 		OpenBrace,
 		CloseBrace,
 		Comma,
@@ -120,21 +119,6 @@ namespace UkooLabs.FbxSharpie.Tokens
 			}
 		}
 
-		//private bool SameType<T, U, V>(T first, U second) where T : BooleanToken where U : BooleanToken
-		//{
-		//	return first.GetType().Equals(second.GetType());
-		//}
-
-		//private bool SameType<T, U>(T first, U second) where T : DoubleToken where U : DoubleToken
-		//{
-		//	return first.GetType().Equals(second.GetType());
-		//}
-
-		//private bool Compare<T>(T first, T second) where T : IValueToken<T>
-		//{
-		//	return first.Value.Equals(second.Value);
-		//}
-
 		public bool Equals(Token other)
 		{
 			if (other != null)
@@ -181,6 +165,37 @@ namespace UkooLabs.FbxSharpie.Tokens
 				}
 			}
 			return false;
+		}
+
+		public static Token CreateAsterix()
+		{
+			return new Token(TokenTypeEnum.Asterix);
+		}
+
+		public static Token CreateComma()
+		{
+			return new Token(TokenTypeEnum.Comma);
+		}
+
+		public static Token CreateOpenBrace()
+		{
+			return new Token(TokenTypeEnum.OpenBrace);
+		}
+
+		public static Token CreateCloseBrace()
+		{
+			return new Token(TokenTypeEnum.CloseBrace);
+		}
+
+		public static Token CreateEndOfStream()
+		{
+			return new Token(TokenTypeEnum.EndOfStream);
+		}
+
+		internal Token(TokenTypeEnum tokenType)
+		{
+			TokenType = tokenType;
+			ValueType = ValueTypeEnum.None;
 		}
 
 		internal Token(TokenTypeEnum tokenType, ValueTypeEnum valueType)

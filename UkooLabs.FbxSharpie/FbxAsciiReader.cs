@@ -48,7 +48,7 @@ namespace UkooLabs.FbxSharpie
 			{
 				if (_fbxAsciiFileInfo.IsEndOfStream())
 				{
-					_tokenStack.Push(new Token(TokenTypeEnum.EndOfStream, ValueTypeEnum.None));
+					_tokenStack.Push(Token.CreateEndOfStream());
 				}
 				else if (AsciiTokenParser.TryConsumeWhiteSpace(_fbxAsciiFileInfo))
 				{
@@ -120,7 +120,7 @@ namespace UkooLabs.FbxSharpie
 				throw new FbxException(_fbxAsciiFileInfo, "Array length " + arrayLength + " higher than permitted maximum " + MaxArrayLength);
 			}
 
-			ExpectToken(new Token(TokenTypeEnum.OpenBrace, ValueTypeEnum.None));
+			ExpectToken(Token.CreateOpenBrace());
 			ExpectToken(new IdentifierToken("a"));
 			var array = new List<double>();
 

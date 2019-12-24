@@ -105,9 +105,9 @@ namespace UkooLabs.FbxSharpie.Parsers
 				return true;
 			}
 
-			if (identifier.Length == 1)
+			if (identifier.Equals("T") || identifier.Equals("F"))
 			{
-				token = new BooleanToken(identifier[0].Equals('T'));
+				token = new BooleanToken(identifier.Equals("T"));
 				return true;
 			}
 
@@ -119,19 +119,19 @@ namespace UkooLabs.FbxSharpie.Parsers
 			var c = fbxAsciiFileInfo.PeekChar();
 			if (c.Equals('{'))
 			{
-				operatorToken = new Token(TokenTypeEnum.OpenBrace, ValueTypeEnum.None); ;
+				operatorToken = Token.CreateOpenBrace();
 			}
 			else if (c.Equals('}'))
 			{
-				operatorToken = new Token(TokenTypeEnum.CloseBrace, ValueTypeEnum.None); ;
+				operatorToken = Token.CreateCloseBrace();
 			}
 			else  if (c.Equals('*'))
 			{
-				operatorToken = new Token(TokenTypeEnum.Asterix, ValueTypeEnum.None);
+				operatorToken = Token.CreateAsterix();
 			}
 			else if (c.Equals(','))
 			{
-				operatorToken = new Token(TokenTypeEnum.Comma, ValueTypeEnum.None);
+				operatorToken = Token.CreateComma();
 			}
 			else
 			{

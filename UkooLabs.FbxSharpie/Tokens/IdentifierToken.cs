@@ -21,7 +21,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 			}
 		}
 
-		internal override void WriteAscii(FbxVersion version, StringBuilder stringBuilder, int indentLevel, ref int lineStart)
+		internal override void WriteAscii(FbxVersion version, LineStringBuilder stringBuilder, int indentLevel)
 		{
 			stringBuilder.Append($"{Value}:");
 		}

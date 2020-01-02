@@ -17,6 +17,7 @@ namespace UkooLabs.FbxSharpie
 
 		private readonly byte[] _buffer;
 		private readonly Stream _stream;
+		private readonly long _streamLength;
 
 		private char GetChar()
 		{
@@ -62,7 +63,7 @@ namespace UkooLabs.FbxSharpie
 
 		public bool IsEndOfStream()
 		{
-			return _stream.Position == _stream.Length && _bufferPos == _bufferSize;
+			return _stream.Position == _streamLength && _bufferPos == _bufferSize;
 		}
 
 		public FbxAsciiFileInfo(Stream stream)
@@ -71,6 +72,7 @@ namespace UkooLabs.FbxSharpie
 			Column = 0;
 
 			_stream = stream;
+			_streamLength = _stream.Length;
 			_peekedChar = char.MinValue;
 			_buffer = new byte[bufferLength];
 			_bufferSize = 0;

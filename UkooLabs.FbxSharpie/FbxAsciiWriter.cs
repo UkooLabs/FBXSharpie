@@ -22,16 +22,12 @@ namespace UkooLabs.FbxSharpie
 
 
 		// Adds the given node text to the string
-		void BuildString(FbxNode node, StringBuilder sb, FbxVersion version, int indentLevel = 0)
+		void BuildString(FbxNode node, LineStringBuilder sb, FbxVersion version, int indentLevel = 0)
 		{
-			int lineStart = sb.Length;
 			// Write identifier
-			for (int i = 0; i < indentLevel; i++)
-			{
-				sb.Append('\t');
-			}
+			sb.Indent(indentLevel);
 
-			sb.Append(node.Identifier).Append(':');
+			node.Identifier.WriteAscii(version, sb, indentLevel);
 
 			// Write properties
 			var first = true;
@@ -45,12 +41,12 @@ namespace UkooLabs.FbxSharpie
 
 				if (!first)
 				{
-					sb.Append(',');
+					sb.Append(",");
 				}
 
-				sb.Append(' ');
+				sb.Append(" ");
 
-				p.WriteAscii(version, sb, indentLevel, ref lineStart);
+				p.WriteAscii(version, sb, indentLevel);
 
 				first = false;
 			}
@@ -68,14 +64,12 @@ namespace UkooLabs.FbxSharpie
 
 					BuildString(n, sb, version, indentLevel + 1);
 				}
-				for (int i = 0; i < indentLevel; i++)
-				{
-					sb.Append('\t');
-				}
 
-				sb.Append('}');
+				sb.Indent(indentLevel);
+
+				sb.Append("}");
 			}
-			sb.Append('\n');
+			sb.Append("\n");
 		}
 
 		/// <summary>
@@ -92,7 +86,7 @@ namespace UkooLabs.FbxSharpie
 				throw new ArgumentNullException(nameof(document));
 			}
 
-			var sb = new StringBuilder();
+			var sb = new LineStringBuilder();
 
 			// Write version header (a comment, but required for many importers)
 			var vMajor = (int)document.Version/1000;
@@ -108,7 +102,7 @@ namespace UkooLabs.FbxSharpie
 				}
 
 				BuildString(n, sb, document.Version);
-				sb.Append('\n');
+				sb.Append("\n");
 			}
 			var b = Encoding.ASCII.GetBytes(sb.ToString());
 			stream.Write(b, 0, b.Length);

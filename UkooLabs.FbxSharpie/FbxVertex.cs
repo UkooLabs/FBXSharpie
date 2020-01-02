@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -7,11 +8,11 @@ namespace UkooLabs.FbxSharpie
 	{
 		public const uint SizeInBytes = 56;
 
-		public Vector3 Position { get; }
-		public Vector2 TexCoord { get; }
-		public Vector3 Normal { get; }
-		public Vector3 Tangent { get; }
-		public Vector3 Binormal { get; }
+		public Vector3 Position { get; set; }
+		public Vector2 TexCoord { get; set; }
+		public Vector3 Normal { get; set; }
+		public Vector3 Tangent { get; set; }
+		public Vector3 Binormal { get; set; }
 
 		public FbxVertex(Vector3 position, Vector2 texCoord, Vector3 normal, Vector3 tangent, Vector3 binormal)
 		{
@@ -22,6 +23,7 @@ namespace UkooLabs.FbxSharpie
 			Binormal = binormal;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool Equals(object obj)
 		{
 			if (!(obj is FbxVertex))
@@ -38,7 +40,8 @@ namespace UkooLabs.FbxSharpie
 
 		private static int CombineHashCodes(int h1, int h2)
 		{
-			return (((h1 << 5) + h1) ^ h2);
+			uint shift5 = ((uint)h1 << 5) | ((uint)h1 >> 27);
+			return ((int)shift5 + h1) ^ h2;
 		}
 
 		public override int GetHashCode()

@@ -6,11 +6,11 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 {
 	internal class LongArrayToken : Token
 	{
-		public List<long> Values { get; }
+		public long[] Values { get; set; }
 
 		internal override void WriteBinary(FbxVersion version, BinaryWriter binaryWriter)
 		{
-			var count = Values.Count;
+			var count = Values.Length;
 			binaryWriter.Write((byte)'l');
 			binaryWriter.Write(count);
 			var uncompressedSize = count * sizeof(long);
@@ -22,39 +22,25 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		internal override void WriteAscii(FbxVersion version, StringBuilder stringBuilder, int indentLevel, ref int lineStart)
+		internal override void WriteAscii(FbxVersion version, LineStringBuilder lineStringBuilder, int indentLevel)
 		{
-			var arrayLength = Values.Count;
-			WriteAsciiArray(version, stringBuilder, arrayLength, indentLevel, ref lineStart, (itemWriter, currentLineStart) =>
+			var arrayLength = Values.Length;
+			WriteAsciiArray(version, lineStringBuilder, arrayLength, indentLevel, (itemWriter) =>
 			{
-				bool pFirst = true;
-				foreach (var value in Values)
+				for (var i = 0; i < Values.Length; i++)
 				{
-					var stringValue = value.ToString();
-					if (!pFirst)
+					if (i > 0)
 					{
-						stringBuilder.Append(',');
+						lineStringBuilder.Append(",");
 					}
-					if ((stringBuilder.Length - currentLineStart) + stringValue.Length >= Settings.MaxLineLength)
-					{
-						stringBuilder.Append('\n');
-						currentLineStart = stringBuilder.Length;
-					}
-					stringBuilder.Append(stringValue);
-					pFirst = false;
+					lineStringBuilder.Append(Values[i].ToString());
 				}
-				return currentLineStart;
 			});
-		}
-
-		public LongArrayToken() : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Long)
-		{
-			Values = new List<long>();
 		}
 
 		public LongArrayToken(long[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Long)
 		{
-			Values = new List<long>(values);
+			Values = values;
 		}
 	}
 }

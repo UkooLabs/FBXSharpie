@@ -9,8 +9,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/UkooLabs/FBXSharpie</PackageProjectUrl>
-    <PackageReleaseNotes>Fixed: parsing of V6 fbx files
-Improved: parsing of materials</PackageReleaseNotes>
+    <PackageReleaseNotes>Optimized: speed</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols> 

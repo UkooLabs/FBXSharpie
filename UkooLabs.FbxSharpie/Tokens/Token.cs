@@ -44,7 +44,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 			throw new NotImplementedException();
 		}
 
-		internal virtual void WriteAscii(FbxVersion version, StringBuilder stringBuilder, int indentLevel, ref int lineStart)
+		internal virtual void WriteAscii(FbxVersion version, LineStringBuilder lineStringBuilder, int indentLevel)
 		{
 			throw new NotImplementedException();
 		}
@@ -92,30 +92,22 @@ namespace UkooLabs.FbxSharpie.Tokens
 			}
 		}
 
-		internal void WriteAsciiArray(FbxVersion version, StringBuilder stringBuilder, int arrayLength, int indentLevel, ref int lineStart, Func<StringBuilder, int, int> itemWriterAction)
+		internal void WriteAsciiArray(FbxVersion version, LineStringBuilder lineStringBuilder, int arrayLength, int indentLevel, Action<LineStringBuilder> itemWriterAction)
 		{
 			if (version >= FbxVersion.v7_1)
 			{
-				stringBuilder.Append('*').Append(arrayLength).Append(" {\n");
-				lineStart = stringBuilder.Length;
-				for (int i = -1; i < indentLevel; i++)
-				{
-					stringBuilder.Append('\t');
-				}
-
-				stringBuilder.Append("a: ");
+				lineStringBuilder.Append("*").Append(arrayLength.ToString()).Append(" {\n");
+				lineStringBuilder.Indent(indentLevel + 1);
+				lineStringBuilder.Append("a: ");
 			}
 
-			lineStart = itemWriterAction.Invoke(stringBuilder, lineStart);
+			itemWriterAction.Invoke(lineStringBuilder);
 
 			if (version >= FbxVersion.v7_1)
 			{
-				stringBuilder.Append('\n');
-				for (int i = 0; i < indentLevel; i++)
-				{
-					stringBuilder.Append('\t');
-				}
-				stringBuilder.Append('}');
+				lineStringBuilder.Append("\n");
+				lineStringBuilder.Indent(indentLevel);
+				lineStringBuilder.Append("}");
 			}
 		}
 

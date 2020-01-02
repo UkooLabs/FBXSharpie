@@ -7,11 +7,11 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 	internal class BooleanArrayToken : Token
 	{
 
-		public List<bool> Values { get; }
+		public bool[] Values { get; set; }
 
 		internal override void WriteBinary(FbxVersion version, BinaryWriter binaryWriter)
 		{
-			var count = Values.Count;
+			var count = Values.Length;
 			binaryWriter.Write((byte)'b');
 			binaryWriter.Write(count);
 			var uncompressedSize = count * sizeof(byte);
@@ -23,39 +23,25 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		internal override void WriteAscii(FbxVersion version, StringBuilder stringBuilder, int indentLevel, ref int lineStart)
+		internal override void WriteAscii(FbxVersion version, LineStringBuilder lineStringBuilder, int indentLevel)
 		{
-			var arrayLength = Values.Count;
-			WriteAsciiArray(version, stringBuilder, arrayLength, indentLevel, ref lineStart, (itemWriter, currentLineStart) => 
+			var arrayLength = Values.Length;
+			WriteAsciiArray(version, lineStringBuilder, arrayLength, indentLevel, (itemWriter) =>
 			{
-				bool pFirst = true;
-				foreach (var value in Values)
+				for (var i = 0; i < Values.Length; i++)
 				{
-					var stringValue = value.ToString();
-					if (!pFirst)
+					if (i > 0)
 					{
-						stringBuilder.Append(',');
+						lineStringBuilder.Append(",");
 					}
-					if ((stringBuilder.Length - currentLineStart) + stringValue.Length >= Settings.MaxLineLength)
-					{
-						stringBuilder.Append('\n');
-						currentLineStart = stringBuilder.Length;
-					}
-					stringBuilder.Append(stringValue);
-					pFirst = false;
+					lineStringBuilder.Append(Values[i] ? "T" : "F");
 				}
-				return currentLineStart;
 			});
-		}
-
-		public BooleanArrayToken() : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Boolean)
-		{
-			Values = new List<bool>();
 		}
 
 		public BooleanArrayToken(bool[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Boolean)
 		{
-			Values = new List<bool>(values);
+			Values = values;
 		}
 	}
 }

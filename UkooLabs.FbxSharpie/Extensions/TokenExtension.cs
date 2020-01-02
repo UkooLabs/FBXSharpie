@@ -21,7 +21,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.ValueType == ValueTypeEnum.None)
 			{
-				if (token.TokenType == TokenTypeEnum.String && token is StringToken stringToken)
+				if (token is StringToken stringToken)
 				{
 					result = stringToken.Value;
 					return true;
@@ -29,32 +29,32 @@ namespace UkooLabs.FbxSharpie.Extensions
 			}
 			else if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanToken booleanToken)
+				if (token is BooleanToken booleanToken)
 				{
 					result = booleanToken.Value ? "T" : "F";
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Short && token is ShortToken shortToken)
+				if (token is ShortToken shortToken)
 				{
 					result = shortToken.Value.ToString();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerToken integerToken)
+				if (token is IntegerToken integerToken)
 				{
 					result = integerToken.Value.ToString();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongToken longToken)
+				if (token is LongToken longToken)
 				{
 					result = longToken.Value.ToString();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatToken floatToken)
+				if (token is FloatToken floatToken)
 				{
 					result = floatToken.Value.ToString();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleToken doubleToken)
+				if (token is DoubleToken doubleToken)
 				{
 					result = doubleToken.Value.ToString();
 					return true;
@@ -77,32 +77,32 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanToken booleanToken)
+				if (token is BooleanToken booleanToken)
 				{
 					result = booleanToken.Value ? 1 : 0;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Short && token is ShortToken shortToken)
+				if (token is ShortToken shortToken)
 				{
 					result = shortToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerToken integerToken)
+				if (token is IntegerToken integerToken)
 				{
 					result = integerToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongToken longToken)
+				if (token is LongToken longToken)
 				{
 					result = longToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatToken floatToken)
+				if (token is FloatToken floatToken)
 				{
 					result = floatToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleToken doubleToken)
+				if (token is DoubleToken doubleToken)
 				{
 					result = (float)doubleToken.Value;
 					return true;
@@ -125,32 +125,32 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanToken booleanToken)
+				if (token is BooleanToken booleanToken)
 				{
 					result = booleanToken.Value ? 1 : 0;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Short && token is ShortToken shortToken)
+				if (token is ShortToken shortToken)
 				{
 					result = shortToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerToken integerToken)
+				if (token is IntegerToken integerToken)
 				{
 					result = integerToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongToken longToken)
+				if (token is LongToken longToken)
 				{
 					result = longToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatToken floatToken)
+				if (token is FloatToken floatToken)
 				{
 					result = floatToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleToken doubleToken)
+				if (token is DoubleToken doubleToken)
 				{
 					result = doubleToken.Value;
 					return true;
@@ -173,32 +173,32 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanArrayToken booleanArrayToken)
+				if (token is BooleanArrayToken booleanArrayToken)
 				{
 					result = (from item in booleanArrayToken.Values select (double)(item ? 1 : 0)).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Byte && token is ByteArrayToken byteArrayToken)
+				if (token is ByteArrayToken byteArrayToken)
 				{
 					result = (from item in byteArrayToken.Values select (double)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerArrayToken integerArrayToken)
+				if (token is IntegerArrayToken integerArrayToken)
 				{
 					result = (from item in integerArrayToken.Values select (double)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongArrayToken longArrayToken)
+				if (token is LongArrayToken longArrayToken)
 				{
 					result = (from item in longArrayToken.Values select (double)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatArrayToken floatArrayToken)
+				if (token is FloatArrayToken floatArrayToken)
 				{
 					result = (from item in floatArrayToken.Values select (double)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleArrayToken doubleArrayToken)
+				if (token is DoubleArrayToken doubleArrayToken)
 				{
 					result = doubleArrayToken.Values;
 					return true;
@@ -221,32 +221,32 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanToken booleanToken)
+				if (token is BooleanToken booleanToken)
 				{
 					result = booleanToken.Value ? 1 : 0;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Short && token is ShortToken shortToken)
+				if (token is ShortToken shortToken)
 				{
 					result = shortToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerToken integerToken)
+				if (token is IntegerToken integerToken)
 				{
 					result = integerToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongToken longToken)
+				if (token is LongToken longToken)
 				{
 					result = longToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatToken floatToken)
+				if (token is FloatToken floatToken)
 				{
 					result = (long)floatToken.Value;
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleToken doubleToken)
+				if (token is DoubleToken doubleToken)
 				{
 					result = (long)doubleToken.Value;
 					return true;
@@ -269,32 +269,32 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanArrayToken booleanArrayToken)
+				if (token is BooleanArrayToken booleanArrayToken)
 				{
 					result = (from item in booleanArrayToken.Values select item ? 1 : 0).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Byte && token is ByteArrayToken byteArrayToken)
+				if (token is ByteArrayToken byteArrayToken)
 				{
 					result = (from item in byteArrayToken.Values select (int)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerArrayToken integerArrayToken)
+				if (token is IntegerArrayToken integerArrayToken)
 				{
 					result = integerArrayToken.Values.ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongArrayToken longArrayToken)
+				if (token is LongArrayToken longArrayToken)
 				{
 					result = (from item in longArrayToken.Values select (int)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatArrayToken floatArrayToken)
+				if (token is FloatArrayToken floatArrayToken)
 				{
 					result = (from item in floatArrayToken.Values select (int)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleArrayToken doubleArrayToken)
+				if (token is DoubleArrayToken doubleArrayToken)
 				{
 					result = (from item in doubleArrayToken.Values select (int)item).ToArray();
 					return true;
@@ -317,36 +317,36 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanArrayToken booleanArrayToken)
+				if (token is BooleanArrayToken booleanArrayToken)
 				{
 					var values = booleanArrayToken.Values.ToArray();
 					result = (from item in values select (float)(item ? 1 : 0)).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Byte && token is ByteArrayToken byteArrayToken)
+				if (token is ByteArrayToken byteArrayToken)
 				{
 					var values = byteArrayToken.Values.ToArray();
 					result = (from item in values select (float)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerArrayToken integerArrayToken)
+				if (token is IntegerArrayToken integerArrayToken)
 				{
 					var values = integerArrayToken.Values.ToArray();
 					result = (from item in values select (float)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongArrayToken longArrayToken)
+				if (token is LongArrayToken longArrayToken)
 				{
 					var values = longArrayToken.Values.ToArray();
 					result = (from item in values select (float)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatArrayToken floatArrayToken)
+				if (token is FloatArrayToken floatArrayToken)
 				{
 					result = floatArrayToken.Values.ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleArrayToken doubleArrayToken)
+				if (token is DoubleArrayToken doubleArrayToken)
 				{
 					var values = doubleArrayToken.Values.ToArray();
 					result = (from item in values select (float)item).ToArray();
@@ -370,36 +370,36 @@ namespace UkooLabs.FbxSharpie.Extensions
 		{
 			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
 			{
-				if (token.ValueType == ValueTypeEnum.Boolean && token is BooleanArrayToken booleanArrayToken)
+				if (token is BooleanArrayToken booleanArrayToken)
 				{
 					var values = booleanArrayToken.Values.ToArray();
 					result = (from item in values select (long)(item ? 1 : 0)).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Byte && token is ByteArrayToken byteArrayToken)
+				if (token is ByteArrayToken byteArrayToken)
 				{
 					var values = byteArrayToken.Values.ToArray();
 					result = (from item in values select (long)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Integer && token is IntegerArrayToken integerArrayToken)
+				if (token is IntegerArrayToken integerArrayToken)
 				{
 					var values = integerArrayToken.Values.ToArray();
 					result = (from item in values select (long)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Long && token is LongArrayToken longArrayToken)
+				if (token is LongArrayToken longArrayToken)
 				{
 					result = longArrayToken.Values.ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Float && token is FloatArrayToken floatArrayToken)
+				if (token is FloatArrayToken floatArrayToken)
 				{
 					var values = floatArrayToken.Values.ToArray();
 					result = (from item in values select (long)item).ToArray();
 					return true;
 				}
-				if (token.ValueType == ValueTypeEnum.Double && token is DoubleArrayToken doubleArrayToken)
+				if (token is DoubleArrayToken doubleArrayToken)
 				{
 					var values = doubleArrayToken.Values.ToArray();
 					result = (from item in values select (long)item).ToArray();

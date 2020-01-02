@@ -13,9 +13,9 @@ namespace UkooLabs.FbxSharpie.Tokens.Value
 			binaryWriter.Write(Value ? 'T' : 'F');
 		}
 
-		internal override void WriteAscii(FbxVersion version, LineStringBuilder stringBuilder, int indentLevel)
+		internal override void WriteAscii(FbxVersion version, LineStringBuilder lineStringBuilder, int indentLevel)
 		{
-			stringBuilder.Append(Value ? "T" : "F");
+			lineStringBuilder.Append(Value ? "T" : "F");
 		}
 
 		public BooleanToken(bool value) : base(TokenTypeEnum.Value, ValueTypeEnum.Boolean)

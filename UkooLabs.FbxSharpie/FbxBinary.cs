@@ -95,7 +95,6 @@ namespace UkooLabs.FbxSharpie
 
 		const string timePath1 = "FBXHeaderExtension";
 		const string timePath2 = "CreationTimeStamp";
-		static readonly Stack<string> timePath = new Stack<string>(new[] { timePath1, timePath2 });
 
 		// Gets a single timestamp component
 		static int GetTimestampVar(FbxNode timestamp, string element)

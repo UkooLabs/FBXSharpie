@@ -4,7 +4,7 @@
 	{
 		public readonly string Value;
 
-		public CommentToken(string value) : base(TokenTypeEnum.Comment, ValueTypeEnum.None)
+		public CommentToken(string value) : base(TokenType.Comment, ValueType.None)
 		{
 			Value = value;
 		}

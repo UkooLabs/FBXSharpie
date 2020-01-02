@@ -29,7 +29,7 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		public ByteArrayToken(byte[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Byte)
+		public ByteArrayToken(byte[] values) : base(TokenType.ValueArray, ValueType.Byte)
 		{
 			Values = values;
 		}

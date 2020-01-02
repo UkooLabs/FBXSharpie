@@ -31,7 +31,7 @@ namespace UkooLabs.FbxSharpie.Tokens.Value
 			return Value.GetHashCode();
 		}
 
-		public DoubleToken(double value) : base(TokenTypeEnum.Value, ValueTypeEnum.Double)
+		public DoubleToken(double value) : base(TokenType.Value, ValueType.Double)
 		{
 			Value = value;
 		}

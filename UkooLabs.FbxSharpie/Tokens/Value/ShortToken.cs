@@ -31,7 +31,7 @@ namespace UkooLabs.FbxSharpie.Tokens.Value
 			return Value.GetHashCode();
 		}
 
-		public ShortToken(short value) : base(TokenTypeEnum.Value, ValueTypeEnum.Short)
+		public ShortToken(short value) : base(TokenType.Value, ValueType.Short)
 		{
 			Value = value;
 		}

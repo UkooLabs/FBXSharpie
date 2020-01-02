@@ -31,7 +31,7 @@ namespace UkooLabs.FbxSharpie.Tokens.Value
 			return Value.GetHashCode();
 		}
 
-		public FloatToken(float value) : base(TokenTypeEnum.Value, ValueTypeEnum.Float)
+		public FloatToken(float value) : base(TokenType.Value, ValueType.Float)
 		{
 			Value = value;
 		}

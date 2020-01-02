@@ -19,7 +19,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsString(this Token token, out string result)
 		{
-			if (token.ValueType == ValueTypeEnum.None)
+			if (token.ValueType == Tokens.ValueType.None)
 			{
 				if (token is StringToken stringToken)
 				{
@@ -27,7 +27,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 					return true;
 				}
 			}
-			else if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
+			else if (token.TokenType == TokenType.Value && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -66,7 +66,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsFloat(this Token token, out float result)
 		{
-			if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.Value && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -105,7 +105,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsDouble(this Token token, out double result)
 		{
-			if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.Value && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -144,7 +144,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsDoubleArray(this Token token, out double[] result)
 		{
-			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.ValueArray && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -183,7 +183,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsLong(this Token token, out long result)
 		{
-			if (token.TokenType == TokenTypeEnum.Value && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.Value && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -222,7 +222,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsIntArray(this Token token, out int[] result)
 		{
-			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.ValueArray && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -261,7 +261,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsFloatArray(this Token token, out float[] result)
 		{
-			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.ValueArray && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{
@@ -305,7 +305,7 @@ namespace UkooLabs.FbxSharpie.Extensions
 
 		public static bool TryGetAsLongArray(this Token token, out long[] result)
 		{
-			if (token.TokenType == TokenTypeEnum.ValueArray && token.ValueType != ValueTypeEnum.None)
+			if (token.TokenType == TokenType.ValueArray && token.ValueType != Tokens.ValueType.None)
 			{
 				switch (token)
 				{

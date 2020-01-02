@@ -37,7 +37,7 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		public BooleanArrayToken(bool[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Boolean)
+		public BooleanArrayToken(bool[] values) : base(TokenType.ValueArray, ValueType.Boolean)
 		{
 			Values = values;
 		}

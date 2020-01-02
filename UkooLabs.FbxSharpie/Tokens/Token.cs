@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using UkooLabs.FbxSharpie.Tokens.Value;
 
 namespace UkooLabs.FbxSharpie.Tokens
 {
-	public enum TokenTypeEnum
+	public enum TokenType
 	{
 		EndOfStream,
 		Comment,
@@ -20,7 +20,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 		ValueArray
 	}
 
-	public enum ValueTypeEnum
+	public enum ValueType
 	{
 		None,
 		Boolean,
@@ -32,12 +32,12 @@ namespace UkooLabs.FbxSharpie.Tokens
 		Double
 	}
 
-	public class Token : IEquatable<Token>
+	public class Token : IEqualityComparer<Token>
 	{
 
-		public TokenTypeEnum TokenType { get; }
+		public TokenType TokenType { get; }
 
-		public ValueTypeEnum ValueType { get; }
+		public ValueType ValueType { get; }
 
 		internal virtual void WriteBinary(FbxVersion version, BinaryWriter binaryWriter)
 		{
@@ -151,7 +151,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 				{
 					return identifierToken.Value == identifierTokenOther.Value;
 				}
-				if (TokenType == other.TokenType && TokenType != TokenTypeEnum.ValueArray && ValueType == other.ValueType)
+				if (TokenType == other.TokenType && TokenType != TokenType.ValueArray && ValueType == other.ValueType)
 				{
 					return true;
 				}
@@ -161,36 +161,46 @@ namespace UkooLabs.FbxSharpie.Tokens
 
 		public static Token CreateAsterix()
 		{
-			return new Token(TokenTypeEnum.Asterix);
+			return new Token(TokenType.Asterix);
 		}
 
 		public static Token CreateComma()
 		{
-			return new Token(TokenTypeEnum.Comma);
+			return new Token(TokenType.Comma);
 		}
 
 		public static Token CreateOpenBrace()
 		{
-			return new Token(TokenTypeEnum.OpenBrace);
+			return new Token(TokenType.OpenBrace);
 		}
 
 		public static Token CreateCloseBrace()
 		{
-			return new Token(TokenTypeEnum.CloseBrace);
+			return new Token(TokenType.CloseBrace);
 		}
 
 		public static Token CreateEndOfStream()
 		{
-			return new Token(TokenTypeEnum.EndOfStream);
+			return new Token(TokenType.EndOfStream);
 		}
 
-		internal Token(TokenTypeEnum tokenType)
+		public bool Equals(Token x, Token y)
+		{
+			throw new NotImplementedException();
+		}
+
+		public int GetHashCode(Token obj)
+		{
+			throw new NotImplementedException();
+		}
+
+		internal Token(TokenType tokenType)
 		{
 			TokenType = tokenType;
-			ValueType = ValueTypeEnum.None;
+			ValueType = ValueType.None;
 		}
 
-		internal Token(TokenTypeEnum tokenType, ValueTypeEnum valueType)
+		internal Token(TokenType tokenType, ValueType valueType)
 		{
 			TokenType = tokenType;
 			ValueType = valueType;

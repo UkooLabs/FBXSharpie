@@ -40,7 +40,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 			return Value?.GetHashCode() ?? 0;
 		}
 
-		public IdentifierToken(string value) : base(TokenTypeEnum.Identifier, ValueTypeEnum.None)
+		public IdentifierToken(string value) : base(TokenType.Identifier, ValueType.None)
 		{
 			Value = value;
 		}

@@ -17,7 +17,7 @@ namespace UkooLabs.FbxSharpie.Tokens.Value
 			lineStringBuilder.Append(Value ? "T" : "F");
 		}
 
-		public BooleanToken(bool value) : base(TokenTypeEnum.Value, ValueTypeEnum.Boolean)
+		public BooleanToken(bool value) : base(TokenType.Value, ValueType.Boolean)
 		{
 			Value = value;
 		}

@@ -36,7 +36,7 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		public FloatArrayToken(float[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Float)
+		public FloatArrayToken(float[] values) : base(TokenType.ValueArray, ValueType.Float)
 		{
 			Values = values;
 		}

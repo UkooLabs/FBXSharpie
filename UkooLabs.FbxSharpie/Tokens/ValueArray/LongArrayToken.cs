@@ -36,7 +36,7 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		public LongArrayToken(long[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Long)
+		public LongArrayToken(long[] values) : base(TokenType.ValueArray, ValueType.Long)
 		{
 			Values = values;
 		}

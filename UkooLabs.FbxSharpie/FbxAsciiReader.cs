@@ -128,11 +128,11 @@ namespace UkooLabs.FbxSharpie
 			Token token = ReadToken();
 			var arrayType = ArrayType.Byte;
 
-			while (token.TokenType != TokenTypeEnum.CloseBrace)
+			while (token.TokenType != TokenType.CloseBrace)
 			{
 				if (expectComma)
 				{
-					if (token.TokenType != TokenTypeEnum.Comma)
+					if (token.TokenType != TokenType.Comma)
 					{
 						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected ','");
 					}
@@ -152,19 +152,19 @@ namespace UkooLabs.FbxSharpie
 
 				if (token.TryGetAsDouble(out var value))
 				{
-					if (token.ValueType == ValueTypeEnum.Integer && arrayType < ArrayType.Integer)
+					if (token.ValueType == Tokens.ValueType.Integer && arrayType < ArrayType.Integer)
 					{
 						arrayType = ArrayType.Integer;
 					}
-					else if (token.ValueType == ValueTypeEnum.Long && arrayType < ArrayType.Long)
+					else if (token.ValueType == Tokens.ValueType.Long && arrayType < ArrayType.Long)
 					{
 						arrayType = ArrayType.Long;
 					}
-					else if (token.ValueType == ValueTypeEnum.Float)
+					else if (token.ValueType == Tokens.ValueType.Float)
 					{
 						arrayType = arrayType < ArrayType.Long ? ArrayType.Float : ArrayType.Double;
 					}
-					else if (token.ValueType == ValueTypeEnum.Double && arrayType < ArrayType.Double)
+					else if (token.ValueType == Tokens.ValueType.Double && arrayType < ArrayType.Double)
 					{
 						arrayType = ArrayType.Double;
 					}
@@ -220,7 +220,7 @@ namespace UkooLabs.FbxSharpie
 			var first = ReadToken();
 			if (!(first is IdentifierToken id))
 			{
-				if (first is Token tok && tok.TokenType == TokenTypeEnum.EndOfStream)
+				if (first is Token tok && tok.TokenType == TokenType.EndOfStream)
 				{
 					return null;
 				}
@@ -231,11 +231,11 @@ namespace UkooLabs.FbxSharpie
 			// Read properties
 			Token token = ReadToken();
 			bool expectComma = false;
-			while (token.TokenType != TokenTypeEnum.OpenBrace && token.TokenType != TokenTypeEnum.Identifier && token.TokenType != TokenTypeEnum.CloseBrace)
+			while (token.TokenType != TokenType.OpenBrace && token.TokenType != TokenType.Identifier && token.TokenType != TokenType.CloseBrace)
 			{
 				if (expectComma)
 				{
-					if (token.TokenType != TokenTypeEnum.Comma)
+					if (token.TokenType != TokenType.Comma)
 					{
 						throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token + "', expected a ','");
 					}
@@ -244,11 +244,11 @@ namespace UkooLabs.FbxSharpie
 					continue;
 				}
 
-				if (token.TokenType == TokenTypeEnum.Asterix)
+				if (token.TokenType == TokenType.Asterix)
 				{
 					token = ReadArray();
 				}
-				else if (token.TokenType == TokenTypeEnum.CloseBrace || token.TokenType == TokenTypeEnum.Comma)
+				else if (token.TokenType == TokenType.CloseBrace || token.TokenType == TokenType.Comma)
 				{
 					throw new FbxException(_fbxAsciiFileInfo, "Unexpected '" + token.TokenType + "' in property list");
 				}
@@ -259,14 +259,14 @@ namespace UkooLabs.FbxSharpie
 			}
 			// TODO: Merge property list into an array as necessary
 			// Now we're either at an open brace, close brace or a new node
-			if (token.TokenType == TokenTypeEnum.Identifier || token.TokenType == TokenTypeEnum.CloseBrace)
+			if (token.TokenType == TokenType.Identifier || token.TokenType == TokenType.CloseBrace)
 			{
 				_tokenStack.Push(token);
 				return node;
 			}
 			// The while loop can't end unless we're at an open brace, so we can continue right on
 			Token endBrace = ReadToken();
-			while(endBrace.TokenType != TokenTypeEnum.CloseBrace)
+			while(endBrace.TokenType != TokenType.CloseBrace)
 			{
 				_tokenStack.Push(endBrace);
 				node.AddNode(ReadNode());

@@ -42,7 +42,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 			lineStringBuilder.Append($"\"{Value}\"");
 		}
 
-		public StringToken(string value) : base(TokenTypeEnum.String, ValueTypeEnum.None)
+		public StringToken(string value) : base(TokenType.String, ValueType.None)
 		{
 			Value = value;
 		}

@@ -36,7 +36,7 @@ namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 			});
 		}
 
-		public DoubleArrayToken(double[] values) : base(TokenTypeEnum.ValueArray, ValueTypeEnum.Double)
+		public DoubleArrayToken(double[] values) : base(TokenType.ValueArray, ValueType.Double)
 		{
 			Values = values;
 		}

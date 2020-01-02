@@ -37,7 +37,7 @@ namespace UkooLabs.FbxSharpie
 		{
 			foreach (var property in _properties)
 			{
-				if (property.TokenType != TokenTypeEnum.String)
+				if (property.TokenType != TokenType.String)
 				{
 					continue;
 				}
@@ -61,27 +61,27 @@ namespace UkooLabs.FbxSharpie
 			var values = new List<int>();
 			foreach (var property in Properties)
 			{
-				if (property.TokenType != TokenTypeEnum.Value && property.ValueType != ValueTypeEnum.None)
+				if (property.TokenType != TokenType.Value && property.ValueType != Tokens.ValueType.None)
 				{
 					continue;
 				}
-				if (property.ValueType == ValueTypeEnum.Boolean && property is BooleanToken booleanToken)
+				if (property.ValueType == Tokens.ValueType.Boolean && property is BooleanToken booleanToken)
 				{
 					values.Add(booleanToken.Value ? 1 : 0);
 				}
-				else if (property.ValueType == ValueTypeEnum.Integer && property is IntegerToken integerToken)
+				else if (property.ValueType == Tokens.ValueType.Integer && property is IntegerToken integerToken)
 				{
 					values.Add(integerToken.Value);
 				}
-				else if (property.ValueType == ValueTypeEnum.Long && property is LongToken longToken)
+				else if (property.ValueType == Tokens.ValueType.Long && property is LongToken longToken)
 				{
 					values.Add((int)longToken.Value);
 				}
-				else if (property.ValueType == ValueTypeEnum.Float && property is FloatToken floatToken)
+				else if (property.ValueType == Tokens.ValueType.Float && property is FloatToken floatToken)
 				{
 					values.Add((int)floatToken.Value);
 				}
-				else if (property.ValueType == ValueTypeEnum.Double && property is DoubleToken doubleToken)
+				else if (property.ValueType == Tokens.ValueType.Double && property is DoubleToken doubleToken)
 				{
 					values.Add((int)doubleToken.Value);
 				}
@@ -94,27 +94,27 @@ namespace UkooLabs.FbxSharpie
 			var values = new List<float>();
 			foreach (var property in Properties)
 			{
-				if (property.TokenType != TokenTypeEnum.Value && property.ValueType != ValueTypeEnum.None)
+				if (property.TokenType != TokenType.Value && property.ValueType != Tokens.ValueType.None)
 				{
 					continue;
 				}
-				if (property.ValueType == ValueTypeEnum.Boolean && property is BooleanToken booleanToken)
+				if (property.ValueType == Tokens.ValueType.Boolean && property is BooleanToken booleanToken)
 				{
 					values.Add(booleanToken.Value ? 1 : 0);
 				}
-				else if (property.ValueType == ValueTypeEnum.Integer && property is IntegerToken integerToken)
+				else if (property.ValueType == Tokens.ValueType.Integer && property is IntegerToken integerToken)
 				{
 					values.Add(integerToken.Value);
 				}
-				else if (property.ValueType == ValueTypeEnum.Long && property is LongToken longToken)
+				else if (property.ValueType == Tokens.ValueType.Long && property is LongToken longToken)
 				{
 					values.Add(longToken.Value);
 				}
-				else if (property.ValueType == ValueTypeEnum.Float && property is FloatToken floatToken)
+				else if (property.ValueType == Tokens.ValueType.Float && property is FloatToken floatToken)
 				{
 					values.Add(floatToken.Value);
 				}
-				else if (property.ValueType == ValueTypeEnum.Double && property is DoubleToken doubleToken)
+				else if (property.ValueType == Tokens.ValueType.Double && property is DoubleToken doubleToken)
 				{
 					values.Add((float)doubleToken.Value);
 				}

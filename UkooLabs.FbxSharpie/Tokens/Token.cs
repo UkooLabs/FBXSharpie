@@ -117,7 +117,7 @@ namespace UkooLabs.FbxSharpie.Tokens
 			{
 				if (this is BooleanToken booleanToken && other is BooleanToken booleanTokenOther)
 				{
-					return booleanToken.Value = booleanTokenOther.Value;
+					return booleanToken.Value == booleanTokenOther.Value;
 				}
 				if (this is ShortToken shortToken && other is ShortToken shortTokenOther)
 				{

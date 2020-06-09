@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UkooLabs.FbxSharpie.Extensions;
 
@@ -98,7 +99,7 @@ namespace UkooLabs.FbxSharpie
 		// Gets a single timestamp component
 		static int GetTimestampVar(FbxNode timestamp, string element)
 		{
-			var elementNode = timestamp[element];
+			var elementNode = timestamp[element].FirstOrDefault();
 			if (elementNode != null && elementNode.Properties.Length > 0)
 			{
 				var prop = elementNode.Properties[0];

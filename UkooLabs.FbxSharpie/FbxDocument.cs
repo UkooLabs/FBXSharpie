@@ -246,31 +246,67 @@ namespace UkooLabs.FbxSharpie
 			return result.ToArray();
 		}
 
-		private void GetLayerFloatValues(long geometryId, string layerElement, string layerName, string layerIndexName, out float[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
+		private void GetLayerFloatValues(long geometryId, string layerElement, int layerIndex, string layerName, string layerIndexName, out float[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
 		{
 			var geometryNode = GetGeometry(geometryId);
-			var layerNode = geometryNode?.GetRelative(layerElement);
-			var layerTypeNode = layerNode?.GetRelative(layerName);
-			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsFloatArray() : layerTypeNode?.PropertiesToFloatArray();
-			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
-			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
-			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
-			referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
+			var layerNodes = geometryNode?.GetChildren(layerElement);
+
+			if (layerNodes != null)
+			{
+				foreach (var layerNode in layerNodes)
+				{
+					var index = layerNode.Properties[0].GetAsLong();
+					if (index != layerIndex)
+					{
+						continue;
+					}
+					var layerTypeNode = layerNode?.GetRelative(layerName);
+					layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsFloatArray() : layerTypeNode?.PropertiesToFloatArray();
+					var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
+					layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
+					mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
+					referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
+					return;
+				}
+			}
+
+			layerValues = new float[] { };
+			layerIndices = new int[] { };
+			mappingMode = null;
+			referenceMode = null;
 		}
 
-		private void GetLayerIntValues(long geometryId, string layerElement, string layerName, string layerIndexName, out int[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
+		private void GetLayerIntValues(long geometryId, string layerElement, int layerIndex, string layerName, string layerIndexName, out int[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
 		{
 			var geometryNode = GetGeometry(geometryId);
-			var layerNode = geometryNode?.GetRelative(layerElement);
-			var layerTypeNode = layerNode?.GetRelative(layerName);
-			layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsIntArray() : layerTypeNode?.PropertiesToIntArray();
-			var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
-			layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
-			mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
-			referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
+			var layerNodes = geometryNode?.GetChildren(layerElement);
+
+			if (layerNodes != null)
+			{
+				foreach (var layerNode in layerNodes)
+				{
+					var index = layerNode.Properties[0].GetAsLong();
+					if (index != layerIndex)
+					{
+						continue;
+					}
+					var layerTypeNode = layerNode?.GetRelative(layerName);
+					layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsIntArray() : layerTypeNode?.PropertiesToIntArray();
+					var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
+					layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
+					mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
+					referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
+					return;
+				}
+			}
+
+			layerValues = new int[] { };
+			layerIndices = new int[] { };
+			mappingMode = null;
+			referenceMode = null;
 		}
 
-		public Vector3[] GetNormals(long geometryId, int[] vertexIndices)
+		public Vector3[] GetNormals(long geometryId, int[] vertexIndices, int layerIndex = 0)
 		{
 			var normals = new List<Vector3>();
 			if (!GetGeometryHasNormals(geometryId))
@@ -278,7 +314,7 @@ namespace UkooLabs.FbxSharpie
 				return normals.ToArray();
 			}
 
-			GetLayerFloatValues(geometryId, "LayerElementNormal", "Normals", "NormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+			GetLayerFloatValues(geometryId, "LayerElementNormal", layerIndex, "Normals", "NormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
 			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
@@ -293,7 +329,7 @@ namespace UkooLabs.FbxSharpie
 			return normals.ToArray();
 		}
 
-		public Vector3[] GetTangents(long geometryId, int[] vertexIndices)
+		public Vector3[] GetTangents(long geometryId, int[] vertexIndices, int layerIndex = 0)
 		{
 			var tangents = new List<Vector3>();
 			if (!GetGeometryHasTangents(geometryId))
@@ -301,7 +337,7 @@ namespace UkooLabs.FbxSharpie
 				return tangents.ToArray();
 			}
 
-			GetLayerFloatValues(geometryId, "LayerElementTangent", "Tangents", "TangentsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+			GetLayerFloatValues(geometryId, "LayerElementTangent", layerIndex, "Tangents", "TangentsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
 			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
@@ -316,7 +352,7 @@ namespace UkooLabs.FbxSharpie
 			return tangents.ToArray();
 		}
 
-		public Vector3[] GetBinormals(long geometryId, int[] vertexIndices)
+		public Vector3[] GetBinormals(long geometryId, int[] vertexIndices, int layerIndex = 0)
 		{
 			var binormals = new List<Vector3>();
 			if (!GetGeometryHasTangents(geometryId))
@@ -324,7 +360,7 @@ namespace UkooLabs.FbxSharpie
 				return binormals.ToArray();
 			}
 
-			GetLayerFloatValues(geometryId, "LayerElementBinormal", "Binormals", "BinormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+			GetLayerFloatValues(geometryId, "LayerElementBinormal", layerIndex, "Binormals", "BinormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
 			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
@@ -339,7 +375,7 @@ namespace UkooLabs.FbxSharpie
 			return binormals.ToArray();
 		}
 
-		public Vector2[] GetTexCoords(long geometryId, int[] vertexIndices)
+		public Vector2[] GetTexCoords(long geometryId, int[] vertexIndices, int layerIndex = 0)
 		{
 			var texCoords = new List<Vector2>();
 			if (!GetGeometryHasTexCoords(geometryId))
@@ -347,7 +383,7 @@ namespace UkooLabs.FbxSharpie
 				return texCoords.ToArray();
 			}
 
-			GetLayerFloatValues(geometryId, "LayerElementUV", "UV", "UVIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+			GetLayerFloatValues(geometryId, "LayerElementUV", layerIndex, "UV", "UVIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
 			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
@@ -362,7 +398,7 @@ namespace UkooLabs.FbxSharpie
 			return texCoords.ToArray();
 		}
 
-		public int[] GetMaterials(long geometryId, int[] vertexIndices)
+		public int[] GetMaterials(long geometryId, int[] vertexIndices, int layerIndex = 0)
 		{
 			var materials = new List<int>();
 			if (!GetGeometryHasMaterials(geometryId))
@@ -370,7 +406,7 @@ namespace UkooLabs.FbxSharpie
 				return materials.ToArray();
 			}
 
-			GetLayerIntValues(geometryId, "LayerElementMaterial", "Materials", "MaterialsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+			GetLayerIntValues(geometryId, "LayerElementMaterial", layerIndex, "Materials", "MaterialsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
 			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)

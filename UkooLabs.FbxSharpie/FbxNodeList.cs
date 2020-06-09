@@ -33,7 +33,21 @@ namespace UkooLabs.FbxSharpie
         /// </summary>
         /// <param name="name"></param>
         /// <returns>The child node, or null</returns>
-        public FbxNode this[string name] { get { return Nodes.FirstOrDefault(n => n != null && n.Identifier.Value == name); } }
+        public FbxNode[] this[string name] { 
+			get { 
+				return Nodes.Where(n => n != null && n.Identifier.Value == name).ToArray(); 
+			} 
+		}
+
+		/// <summary>
+		/// Gets a children nodes, using name
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns>The children nodes array</returns>
+		public FbxNode[] GetChildren(string name)
+		{
+			return this[name];
+		}
 
 		/// <summary>
 		/// Gets a child node, using a '/' separated path
@@ -51,7 +65,7 @@ namespace UkooLabs.FbxSharpie
 					continue;
 				}
 
-				n = n[t];
+				n = n[t].FirstOrDefault();
 				if (n == null)
 				{
 					break;

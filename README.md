@@ -52,11 +52,18 @@ class FbxExample
 		{
 			var vertexIndices = documentNode.GetVertexIndices(geometryId);
 			var positions = documentNode.GetPositions(geometryId, vertexIndices);
-			var normals = documentNode.GetNormals(geometryId, vertexIndices);
-			var tangents = documentNode.GetTangents(geometryId, vertexIndices);
-			var binormals = documentNode.GetBinormals(geometryId, vertexIndices);
-			var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices);
-			var materials = documentNode.GetMaterials(geometryId, vertexIndices);
+
+			var normalLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Normal);
+			var tangentLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Tangent);
+			var binormalLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Binormal);
+			var texCoordLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.TexCoord);
+			var materialLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Material);
+
+			var normals = documentNode.GetNormals(geometryId, vertexIndices, normalLayerIndices[0]);
+			var tangents = documentNode.GetTangents(geometryId, vertexIndices, tangentLayerIndices[0]);
+			var binormals = documentNode.GetBinormals(geometryId, vertexIndices, binormalLayerIndices[0]);
+			var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices, texCoordLayerIndices[0]);
+			var materials = documentNode.GetMaterials(geometryId, vertexIndices, materialLayerIndices[0]);
 
 			var hasNormals = documentNode.GetGeometryHasNormals(geometryId);
 			var hasTexCoords = documentNode.GetGeometryHasTexCoords(geometryId);

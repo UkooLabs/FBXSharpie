@@ -1,6 +1,6 @@
 ﻿namespace UkooLabs.FbxSharpie.Tokens
 {
-	internal class CommentToken : Token
+	public class CommentToken : Token
 	{
 		public readonly string Value;
 

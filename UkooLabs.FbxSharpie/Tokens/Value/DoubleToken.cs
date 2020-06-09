@@ -2,7 +2,7 @@
 
 namespace UkooLabs.FbxSharpie.Tokens.Value
 {
-	internal class DoubleToken : Token
+	public class DoubleToken : Token
 	{
 		public double Value { get; set; }
 

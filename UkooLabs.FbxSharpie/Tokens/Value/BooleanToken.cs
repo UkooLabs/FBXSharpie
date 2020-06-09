@@ -2,7 +2,7 @@
 
 namespace UkooLabs.FbxSharpie.Tokens.Value
 {
-	internal class BooleanToken : Token
+	public class BooleanToken : Token
 	{
 		public bool Value { get; set; }
 

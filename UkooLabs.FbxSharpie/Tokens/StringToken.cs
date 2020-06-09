@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UkooLabs.FbxSharpie.Tokens
 {
-	internal class StringToken : Token
+	public class StringToken : Token
 	{
 		public readonly string Value;
 

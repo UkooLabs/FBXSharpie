@@ -2,7 +2,7 @@
 
 namespace UkooLabs.FbxSharpie.Tokens.ValueArray
 {
-	internal class FloatArrayToken : Token
+	public class FloatArrayToken : Token
 	{
 		public float[] Values { get; set; }
 

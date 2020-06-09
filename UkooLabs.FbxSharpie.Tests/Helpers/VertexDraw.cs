@@ -9,7 +9,7 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 {
 	public static class VertexDraw
 	{
-		public static void Draw(int width, int height, Vector3[] vertices, int[] indices, string filePath)
+		public static void Draw(int width, int height, Vector3[] vertices, string filePath)
 		{
 			var minX = float.MaxValue;
 			var maxX = float.MinValue;
@@ -26,9 +26,9 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 
 			using (var image = new Image<Rgba32>(width, height))
 			{
-				for (int i = 0; i < indices.Length; i += 3)
+				for (int i = 0; i < vertices.Length; i += 3)
 				{
-					var point1 = new PointF(vertices[indices[i]].X, vertices[indices[i]].Y);
+					var point1 = new PointF(vertices[i].X, vertices[i].Y);
 					point1.X -= minX;
 					point1.Y -= minY;
 					point1.X /= (maxX - minX);
@@ -36,7 +36,7 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 					point1.X *= width;
 					point1.Y *= height;
 
-					var point2 = new PointF(vertices[indices[i + 1]].X, vertices[indices[i + 1]].Y);
+					var point2 = new PointF(vertices[i + 1].X, vertices[i + 1].Y);
 					point2.X -= minX;
 					point2.Y -= minY;
 					point2.X /= (maxX - minX);
@@ -44,7 +44,7 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 					point2.X *= width;
 					point2.Y *= height;
 
-					var point3 = new PointF(vertices[indices[i + 2]].X, vertices[indices[i + 2]].Y);
+					var point3 = new PointF(vertices[i + 2].X, vertices[i + 2].Y);
 					point3.X -= minX;
 					point3.Y -= minY;
 					point3.X /= (maxX - minX);
@@ -53,8 +53,8 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 					point3.Y *= height;
 
 					image.Mutate(i => i.DrawLines(Color.HotPink, 2, new[] { point1, point2, point3, point1 }));
-					image.Save(filePath);
 				}
+				image.Save(filePath);
 			}
 		}
 

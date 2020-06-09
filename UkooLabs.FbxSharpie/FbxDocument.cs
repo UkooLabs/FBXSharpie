@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using UkooLabs.FbxSharpie.Extensions;
@@ -84,16 +84,16 @@ namespace UkooLabs.FbxSharpie
 			var polyIndex = 0;
 			for (var i = 0;  i < vertexIndices.Length; i++)
 			{
-				var index = NormalizeIndex(i);
+				var normalizedIndex = NormalizeIndex(vertexIndices[i]);
 				if (polyIndex <= 2)
 				{
-					result.Add(index);
+					result.Add(normalizedIndex);
 				}
 				else
 				{
-					result.Add(i - polyIndex);
-					result.Add(i - 1);
-					result.Add(index);
+					result.Add(vertexIndices[i - polyIndex]);
+					result.Add(vertexIndices[i - 1]);
+					result.Add(normalizedIndex);
 				}
 				polyIndex++;
 				if (vertexIndices[i] < 0)
@@ -115,10 +115,6 @@ namespace UkooLabs.FbxSharpie
 			var materialNodes = GetFbxNodes("Material", this);
 			return materialNodes[materialId];
 		}
-
-
-
-
 
 		private bool IsDirect(string value)
 		{
@@ -281,10 +277,10 @@ namespace UkooLabs.FbxSharpie
 			{
 				return normals.ToArray();
 			}
-			var vertexIndex = 0;
 
 			GetLayerFloatValues(geometryId, "LayerElementNormal", "Normals", "NormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
+			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
 			{
 				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
@@ -304,10 +300,10 @@ namespace UkooLabs.FbxSharpie
 			{
 				return tangents.ToArray();
 			}
-			var vertexIndex = 0;
 
 			GetLayerFloatValues(geometryId, "LayerElementTangent", "Tangents", "TangentsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
+			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
 			{
 				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
@@ -327,10 +323,10 @@ namespace UkooLabs.FbxSharpie
 			{
 				return binormals.ToArray();
 			}
-			var vertexIndex = 0;
 
 			GetLayerFloatValues(geometryId, "LayerElementBinormal", "Binormals", "BinormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
+			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
 			{
 				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
@@ -350,10 +346,10 @@ namespace UkooLabs.FbxSharpie
 			{
 				return texCoords.ToArray();
 			}
-			var vertexIndex = 0;
 
 			GetLayerFloatValues(geometryId, "LayerElementUV", "UV", "UVIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
+			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
 			{
 				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
@@ -374,10 +370,9 @@ namespace UkooLabs.FbxSharpie
 				return materials.ToArray();
 			}
 
-			var vertexIndex = 0;
-
 			GetLayerIntValues(geometryId, "LayerElementMaterial", "Materials", "MaterialsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
 
+			var vertexIndex = 0;
 			for (var i = 0; i < 3; i++)
 			{
 				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)

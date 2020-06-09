@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using UkooLabs.FbxSharpie.Extensions;
 using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Tokens.Value;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -246,7 +248,7 @@ namespace UkooLabs.FbxSharpie
 			return result.ToArray();
 		}
 
-		private void GetLayerFloatValues(long geometryId, string layerElement, int layerIndex, string layerName, string layerIndexName, out float[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
+		private void GetLayerFloatValues(long geometryId, string layerElement, long layerIndex, string layerName, string layerIndexName, out float[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
 		{
 			var geometryNode = GetGeometry(geometryId);
 			var layerNodes = geometryNode?.GetChildren(layerElement);
@@ -276,7 +278,7 @@ namespace UkooLabs.FbxSharpie
 			referenceMode = null;
 		}
 
-		private void GetLayerIntValues(long geometryId, string layerElement, int layerIndex, string layerName, string layerIndexName, out int[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
+		private void GetLayerIntValues(long geometryId, string layerElement, long layerIndex, string layerName, string layerIndexName, out int[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
 		{
 			var geometryNode = GetGeometry(geometryId);
 			var layerNodes = geometryNode?.GetChildren(layerElement);
@@ -306,7 +308,7 @@ namespace UkooLabs.FbxSharpie
 			referenceMode = null;
 		}
 
-		public Vector3[] GetNormals(long geometryId, int[] vertexIndices, int layerIndex = 0)
+		public Vector3[] GetNormals(long geometryId, int[] vertexIndices, long layerIndex = 0)
 		{
 			var normals = new List<Vector3>();
 			if (!GetGeometryHasNormals(geometryId))
@@ -329,7 +331,58 @@ namespace UkooLabs.FbxSharpie
 			return normals.ToArray();
 		}
 
-		public Vector3[] GetTangents(long geometryId, int[] vertexIndices, int layerIndex = 0)
+		private string LayerElementTypeToString(FbxLayerElementType layerElementType)
+		{
+			switch (layerElementType)
+			{
+				case FbxLayerElementType.Normal:
+					return "LayerElementNormal";
+				case FbxLayerElementType.Tangent:
+					return "LayerElementTangent";
+				case FbxLayerElementType.Binormal:
+					return "LayerElementBinormal";
+				case FbxLayerElementType.TexCoord:
+					return "LayerElementUV";
+				case FbxLayerElementType.Material:
+					return "LayerElementMaterial";
+				default:
+					throw new NotSupportedException($"Conversion from '{layerElementType}' not supported.");
+			}
+		}
+
+		public long[] GetLayerIndices(long geometryId, FbxLayerElementType layerElementType)
+		{
+			var layerElementTypeString = LayerElementTypeToString(layerElementType);
+
+			var result = new List<long>();
+			var geometryNode = GetGeometry(geometryId);
+			var layerNodes = geometryNode?.GetChildren("Layer");
+			if (layerNodes != null)
+			{
+				foreach (var layerNode in layerNodes)
+				{
+					var elementNodes = layerNode?.GetChildren("LayerElement");
+					if (elementNodes != null)
+					{
+						foreach (var elementNode in elementNodes)
+						{
+							var elementTypeToken = elementNode["Type"].FirstOrDefault()?.Value as StringToken;
+							if (elementTypeToken.TryGetAsString(out var elementType) && string.Equals(elementType, layerElementTypeString))
+							{
+								var indexToken = elementNode["TypedIndex"].FirstOrDefault()?.Value as IntegerToken;
+								if (indexToken.TryGetAsLong(out var index))
+								{ 
+									result.Add(index);
+								}
+							}
+						}
+					}
+				}
+			}
+			return result.ToArray();
+		}
+
+		public Vector3[] GetTangents(long geometryId, int[] vertexIndices, long layerIndex = 0)
 		{
 			var tangents = new List<Vector3>();
 			if (!GetGeometryHasTangents(geometryId))
@@ -352,7 +405,7 @@ namespace UkooLabs.FbxSharpie
 			return tangents.ToArray();
 		}
 
-		public Vector3[] GetBinormals(long geometryId, int[] vertexIndices, int layerIndex = 0)
+		public Vector3[] GetBinormals(long geometryId, int[] vertexIndices, long layerIndex = 0)
 		{
 			var binormals = new List<Vector3>();
 			if (!GetGeometryHasTangents(geometryId))
@@ -375,7 +428,7 @@ namespace UkooLabs.FbxSharpie
 			return binormals.ToArray();
 		}
 
-		public Vector2[] GetTexCoords(long geometryId, int[] vertexIndices, int layerIndex = 0)
+		public Vector2[] GetTexCoords(long geometryId, int[] vertexIndices, long layerIndex = 0)
 		{
 			var texCoords = new List<Vector2>();
 			if (!GetGeometryHasTexCoords(geometryId))
@@ -398,7 +451,7 @@ namespace UkooLabs.FbxSharpie
 			return texCoords.ToArray();
 		}
 
-		public int[] GetMaterials(long geometryId, int[] vertexIndices, int layerIndex = 0)
+		public int[] GetMaterials(long geometryId, int[] vertexIndices, long layerIndex = 0)
 		{
 			var materials = new List<int>();
 			if (!GetGeometryHasMaterials(geometryId))

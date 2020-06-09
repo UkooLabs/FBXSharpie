@@ -211,6 +211,45 @@ namespace UkooLabs.FbxSharpie.Extensions
 			return false;
 		}
 
+		public static int GetAsIntegr(this Token token)
+		{
+			if (!TryGetAsInteger(token, out var result))
+			{
+				throw new NotSupportedException();
+			}
+			return result;
+		}
+
+		public static bool TryGetAsInteger(this Token token, out int result)
+		{
+			if (token.TokenType == TokenType.Value && token.ValueType != Tokens.ValueType.None)
+			{
+				switch (token)
+				{
+					case BooleanToken booleanToken:
+						result = booleanToken.Value ? 1 : 0;
+						return true;
+					case ShortToken shortToken:
+						result = shortToken.Value;
+						return true;
+					case IntegerToken integerToken:
+						result = integerToken.Value;
+						return true;
+					case LongToken longToken:
+						result = (int)longToken.Value;
+						return true;
+					case FloatToken floatToken:
+						result = (int)floatToken.Value;
+						return true;
+					case DoubleToken doubleToken:
+						result = (int)doubleToken.Value;
+						return true;
+				}
+			}
+			result = 0;
+			return false;
+		}
+
 		public static int[] GetAsIntArray(this Token token)
 		{
 			if (!TryGetAsIntArray(token, out var result))

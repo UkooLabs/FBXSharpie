@@ -8,8 +8,7 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 	{
 		public static void CompareBinaryFiles(string filename)
 		{
-			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			var testFile = Path.Combine(path, "Files", filename);
+			var testFile = Path.Combine(PathHelper.FilesPath, filename);
 			var originalData = File.ReadAllBytes(testFile);
 			var isBinary = FbxIO.IsBinaryFbx(testFile);
 			Assert.True(isBinary);
@@ -50,8 +49,7 @@ namespace UkooLabs.FbxSharpie.Tests.Helpers
 
 		public static void CompareAsciiFiles(string filename)
 		{
-			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			var testFile = Path.Combine(path, "Files", filename);
+			var testFile = Path.Combine(PathHelper.FilesPath, filename);
 			var isBinary = FbxIO.IsBinaryFbx(testFile);
 			Assert.False(isBinary);
 			var documentNode = FbxIO.Read(testFile);

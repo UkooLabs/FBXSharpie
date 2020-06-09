@@ -59,15 +59,10 @@ namespace UkooLabs.FbxSharpie
             return nodeList.ToArray();
         }
 
-
         private int NormalizeIndex(int index)
         {
             return index < 0 ? (index + 1) * -1 : index;
         }
-
-      
-
-
 
 		public int[] GetVertexIndices(long geometryId)
 		{
@@ -86,27 +81,24 @@ namespace UkooLabs.FbxSharpie
 			}
 
 			var result = new List<int>();
-
-			var i = 0;
-			while (i < vertexIndices.Length)
+			var polyIndex = 0;
+			for (var i = 0;  i < vertexIndices.Length; i++)
 			{
-				var quadMode = vertexIndices[i + 2] >= 0;
-				if (quadMode)
+				var index = NormalizeIndex(i);
+				if (polyIndex <= 2)
 				{
-					result.Add(NormalizeIndex(vertexIndices[i]));
-					result.Add(NormalizeIndex(vertexIndices[i + 1]));
-					result.Add(NormalizeIndex(vertexIndices[i + 3]));
-					result.Add(NormalizeIndex(vertexIndices[i + 3]));
-					result.Add(NormalizeIndex(vertexIndices[i + 1]));
-					result.Add(NormalizeIndex(vertexIndices[i + 2]));
-					i += 4;
+					result.Add(index);
 				}
 				else
 				{
-					result.Add(NormalizeIndex(vertexIndices[i]));
-					result.Add(NormalizeIndex(vertexIndices[i + 1]));
-					result.Add(NormalizeIndex(vertexIndices[i + 2]));
-					i += 3;
+					result.Add(i - polyIndex);
+					result.Add(i - 1);
+					result.Add(index);
+				}
+				polyIndex++;
+				if (vertexIndices[i] < 0)
+				{
+					polyIndex = 0;
 				}
 			}
 			return result.ToArray();

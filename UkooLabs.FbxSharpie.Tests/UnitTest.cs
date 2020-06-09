@@ -2,6 +2,7 @@ using System.IO;
 using Xunit;
 using System.Reflection;
 using System.Numerics;
+using UkooLabs.FbxSharpie.Tests.Helpers;
 
 namespace UkooLabs.FbxSharpie.Tests
 {
@@ -38,8 +39,7 @@ namespace UkooLabs.FbxSharpie.Tests
 		[InlineData("cube-binary-fbx2019.fbx", true, 1.0d, true, true, true)]
 		public void TestFbx(string filename, bool expectedIsBinary, double expectedScaleFacor, bool expectedHasTexCoord, bool expectedHasTangent, bool expectedHasBinormal)
 		{
-			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			var testFile = Path.Combine(path, "Files", filename);
+			var testFile = Path.Combine(PathHelper.FilesPath, filename);
 			Assert.True(expectedIsBinary == FbxIO.IsBinaryFbx(testFile), $"IsBinaryFbx expected {expectedIsBinary}");
 
 			var documentNode = FbxIO.Read(testFile, ErrorLevel.Strict);
@@ -103,8 +103,7 @@ namespace UkooLabs.FbxSharpie.Tests
 		[InlineData("multi-material-ascii.fbx")]
 		public void TestMaterialFbx(string filename)
 		{
-			var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			var testFile = Path.Combine(path, "Files", filename);
+			var testFile = Path.Combine(PathHelper.FilesPath, filename);
 
 			var documentNode = FbxIO.Read(testFile, ErrorLevel.Strict);
 			var scaleFactor = documentNode.GetScaleFactor();

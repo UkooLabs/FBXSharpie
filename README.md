@@ -33,66 +33,66 @@ using UkooLabs.FbxSharpie;
 
 class FbxExample
 {
-	static void Main(string[] args)
-	{
-		var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-		var testFile = Path.Combine(path, "file.fbx");
+    static void Main(string[] args)
+    {
+        var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        var testFile = Path.Combine(path, "file.fbx");
 
-		var isBinary = FbxIO.IsBinaryFbx(testFile);
-		var documentNode = FbxIO.Read(testFile);
+        var isBinary = FbxIO.IsBinaryFbx(testFile);
+        var documentNode = FbxIO.Read(testFile);
 
-		// Scale factor usually 1 or 2.54
-		var scaleFactor = documentNode.GetScaleFactor();
+        // Scale factor usually 1 or 2.54
+        var scaleFactor = documentNode.GetScaleFactor();
 
-		var materialIds = documentNode.GetMaterialIds();
-		var geometryIds = documentNode.GetGeometryIds();
+        var materialIds = documentNode.GetMaterialIds();
+        var geometryIds = documentNode.GetGeometryIds();
 
-		var fbxIndexer = new FbxIndexer();
-		foreach (var geometryId in geometryIds)
-		{
-			var vertexIndices = documentNode.GetVertexIndices(geometryId);
-			var positions = documentNode.GetPositions(geometryId, vertexIndices);
+        var fbxIndexer = new FbxIndexer();
+        foreach (var geometryId in geometryIds)
+        {
+            var vertexIndices = documentNode.GetVertexIndices(geometryId);
+            var positions = documentNode.GetPositions(geometryId, vertexIndices);
 
-			var normalLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Normal);
-			var tangentLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Tangent);
-			var binormalLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Binormal);
-			var texCoordLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.TexCoord);
-			var materialLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Material);
+            var normalLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Normal);
+            var tangentLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Tangent);
+            var binormalLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Binormal);
+            var texCoordLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.TexCoord);
+            var materialLayerIndices = documentNode.GetLayerIndices(geometryId, FbxLayerElementType.Material);
 
-			var normals = documentNode.GetNormals(geometryId, vertexIndices, normalLayerIndices[0]);
-			var tangents = documentNode.GetTangents(geometryId, vertexIndices, tangentLayerIndices[0]);
-			var binormals = documentNode.GetBinormals(geometryId, vertexIndices, binormalLayerIndices[0]);
-			var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices, texCoordLayerIndices[0]);
-			var materials = documentNode.GetMaterials(geometryId, vertexIndices, materialLayerIndices[0]);
+            var normals = documentNode.GetNormals(geometryId, vertexIndices, normalLayerIndices[0]);
+            var tangents = documentNode.GetTangents(geometryId, vertexIndices, tangentLayerIndices[0]);
+            var binormals = documentNode.GetBinormals(geometryId, vertexIndices, binormalLayerIndices[0]);
+            var texCoords = documentNode.GetTexCoords(geometryId, vertexIndices, texCoordLayerIndices[0]);
+            var materials = documentNode.GetMaterials(geometryId, vertexIndices, materialLayerIndices[0]);
 
-			var hasNormals = documentNode.GetGeometryHasNormals(geometryId);
-			var hasTexCoords = documentNode.GetGeometryHasTexCoords(geometryId);
-			var hasTangents = documentNode.GetGeometryHasTangents(geometryId);
-			var hasBinormals = documentNode.GetGeometryHasBinormals(geometryId);
-			var hasMaterials = documentNode.GetGeometryHasMaterials(geometryId);
+            var hasNormals = documentNode.GetGeometryHasNormals(geometryId);
+            var hasTexCoords = documentNode.GetGeometryHasTexCoords(geometryId);
+            var hasTangents = documentNode.GetGeometryHasTangents(geometryId);
+            var hasBinormals = documentNode.GetGeometryHasBinormals(geometryId);
+            var hasMaterials = documentNode.GetGeometryHasMaterials(geometryId);
 
-			for (var i = 0; i < positions.Length; i++)
-			{
-				var vertex = new FbxVertex
-				{
-					Position = positions[i],
-					Normal = hasNormals ? normals[i] : new Vector3(),
-					Tangent = hasTangents ? tangents[i] : new Vector3(),
-					Binormal = hasBinormals ? binormals[i] : new Vector3(),
-					TexCoord = hasTexCoords ? texCoords[i] : new Vector2()
-				};
-				var materialId = hasMaterials ? materials[i] : 0;
-				fbxIndexer.AddVertex(vertex, materialId);
-			}
-		}
+            for (var i = 0; i < positions.Length; i++)
+            {
+                var vertex = new FbxVertex
+                {
+                    Position = positions[i],
+                    Normal = hasNormals ? normals[i] : new Vector3(),
+                    Tangent = hasTangents ? tangents[i] : new Vector3(),
+                    Binormal = hasBinormals ? binormals[i] : new Vector3(),
+                    TexCoord = hasTexCoords ? texCoords[i] : new Vector2()
+                };
+                var materialId = hasMaterials ? materials[i] : 0;
+                fbxIndexer.AddVertex(vertex, materialId);
+            }
+        }
 
-		// Example to re-index geometry based on each material
-		foreach (var materialId in materialIds)
-		{
-			var materialName = documentNode.GetMaterialName(materialId);
-			var diffuseColor = documentNode.GetMaterialDiffuseColor(materialId);
-			fbxIndexer.Index(materialId, out var indexedVertices, out var indexedIndices);
-		}
-	}
+        // Example to re-index geometry based on each material
+        foreach (var materialId in materialIds)
+        {
+            var materialName = documentNode.GetMaterialName(materialId);
+            var diffuseColor = documentNode.GetMaterialDiffuseColor(materialId);
+            fbxIndexer.Index(materialId, out var indexedVertices, out var indexedIndices);
+        }
+    }
 }
 ```

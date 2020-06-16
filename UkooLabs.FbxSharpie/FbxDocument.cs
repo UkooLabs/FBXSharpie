@@ -93,9 +93,9 @@ namespace UkooLabs.FbxSharpie
 				}
 				else
 				{
+					result.Add(normalizedIndex);
 					result.Add(vertexIndices[i - polyIndex]);
 					result.Add(vertexIndices[i - 1]);
-					result.Add(normalizedIndex);
 				}
 				polyIndex++;
 				if (vertexIndices[i] < 0)

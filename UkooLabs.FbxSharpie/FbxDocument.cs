@@ -109,13 +109,33 @@ namespace UkooLabs.FbxSharpie
 		private FbxNode GetGeometry(long geometryId)
         {
             var geometryNodes = GetFbxNodes(GeometryName, this);
-			return geometryNodes[geometryId];
+			foreach (var geometryNode in geometryNodes)
+			{
+				foreach (var property in geometryNode.Properties)
+				{
+					if (property is LongToken longToken && geometryId == longToken.Value)
+					{
+						return geometryNode;
+					}
+				}
+			}
+			throw new KeyNotFoundException($"Geometry node with id {geometryId} not found.");
         }
 
 		private FbxNode GetMaterial(long materialId)
 		{
 			var materialNodes = GetFbxNodes("Material", this);
-			return materialNodes[materialId];
+			foreach (var materialNode in materialNodes)
+			{
+				foreach (var property in materialNode.Properties)
+				{
+					if (property is LongToken longToken && materialId == longToken.Value)
+					{
+						return materialNode;
+					}
+				}
+			}
+			throw new KeyNotFoundException($"Material node with id {materialId} not found.");
 		}
 
 		private bool IsDirect(string value)
@@ -532,13 +552,57 @@ namespace UkooLabs.FbxSharpie
 			}
 		}
 
-        public long[] GetGeometryIds()
+		public long GetConnection(long id)
+		{
+			var connectionNodes = GetFbxNodes("Connections", this)[0].Nodes;
+			foreach (var connectionNode in connectionNodes)
+			{
+				if (connectionNode == null || connectionNode.Properties.Length < 2)
+				{
+					continue;
+				}
+				if (!(connectionNode.Properties[1] is LongToken sourceToken) || sourceToken.Value != id)
+				{
+					continue;
+				}
+				if (!(connectionNode.Properties[2] is LongToken destToken))
+				{
+					continue;
+				}
+				return destToken.Value;
+			}
+			throw new KeyNotFoundException($"Connection node with id {id} not found.");
+		}
+
+		public long GetMaterialId(long geometryId)
+		{
+			var modelId = GetConnection(geometryId);
+			var materialIds = GetMaterialIds();
+			foreach (var materialId in materialIds)
+			{
+				if (GetConnection(materialId) == modelId)
+				{
+					return materialId;
+				}
+			}
+			throw new KeyNotFoundException($"Material not found for geometry id {geometryId}.");
+		}
+
+
+		public long[] GetGeometryIds()
         {
 			var geometryNodes = GetFbxNodes(GeometryName, this);
             var result = new List<long>();
             foreach (var geometryNode in geometryNodes)
             {
-				result.Add(result.Count);
+				foreach (var property in geometryNode.Properties)
+				{
+					if (property is LongToken longToken)
+					{
+						result.Add(longToken.Value);
+						break;
+					}
+				}
             }
             return result.ToArray();
         }
@@ -549,7 +613,14 @@ namespace UkooLabs.FbxSharpie
 			var result = new List<long>();
 			foreach (var materialNode in materialNodes)
 			{
-				result.Add(result.Count);
+				foreach (var property in materialNode.Properties)
+				{
+					if (property is LongToken longToken)
+					{
+						result.Add(longToken.Value);
+						break;
+					}
+				}
 			}
 			return result.ToArray();
 		}

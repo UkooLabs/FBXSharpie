@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using UkooLabs.FbxSharpie.Extensions;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -23,10 +24,8 @@ namespace UkooLabs.FbxSharpie
 		private static readonly byte[] extension =
 			{ 0xF8, 0x5A, 0x8C, 0x6A, 0xDE, 0xF5, 0xD9, 0x7E, 0xEC, 0xE9, 0x0C, 0xE3, 0x75, 0x8F, 0x29, 0x0B };
 
-		// Number of null bytes between the footer code and the version
-		private const int footerZeroes1 = 20;
 		// Number of null bytes between the footer version and extension code
-		private const int footerZeroes2 = 120;
+		private const int footerZeroes = 120;
 
 		/// <summary>
 		/// The size of the footer code
@@ -52,8 +51,13 @@ namespace UkooLabs.FbxSharpie
 		protected static bool CheckEqual(byte[] data, byte[] original)
 		{
 			for (int i = 0; i < original.Length; i++)
+			{
 				if (data[i] != original[i])
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -91,19 +95,20 @@ namespace UkooLabs.FbxSharpie
 
 		const string timePath1 = "FBXHeaderExtension";
 		const string timePath2 = "CreationTimeStamp";
-		static readonly Stack<string> timePath = new Stack<string>(new[] { timePath1, timePath2 });
 
 		// Gets a single timestamp component
 		static int GetTimestampVar(FbxNode timestamp, string element)
 		{
-			var elementNode = timestamp[element];
+			var elementNode = timestamp[element].FirstOrDefault();
 			if (elementNode != null && elementNode.Properties.Length > 0)
 			{
-				var prop = elementNode.Properties[0].AsObject;
-				if (prop is int || prop is long)
-					return (int)prop;
+				var prop = elementNode.Properties[0];
+				if (prop.TryGetAsLong(out var longValue))
+				{
+					return (int)longValue;
+				}
 			}
-			throw new FbxException(timePath, -1, "Timestamp has no " + element);
+			throw new FbxException(-1, "Timestamp has no " + element);
 		}
 
 		/// <summary>
@@ -113,9 +118,12 @@ namespace UkooLabs.FbxSharpie
 		/// <returns>A 16-byte code</returns>
 		protected static byte[] GenerateFooterCode(FbxNodeList document)
 		{
-			var timestamp = document.GetRelative(timePath1 + "/" + timePath2);
+			var timestamp = document.GetRelative($"{timePath1}/{timePath2}");
 			if (timestamp == null)
-				throw new FbxException(timePath, -1, "No creation timestamp");
+			{
+				throw new FbxException(-1, "No creation timestamp");
+			}
+
 			try
 			{
 				return GenerateFooterCode(
@@ -130,7 +138,7 @@ namespace UkooLabs.FbxSharpie
 			}
 			catch (ArgumentOutOfRangeException)
 			{
-				throw new FbxException(timePath, -1, "Invalid timestamp");
+				throw new FbxException(-1, "Invalid timestamp");
 			}
 		}
 
@@ -150,19 +158,39 @@ namespace UkooLabs.FbxSharpie
 			int hour, int minute, int second, int millisecond)
 		{
 			if(year < 0 || year > 9999)
+			{
 				throw new ArgumentOutOfRangeException(nameof(year));
-			if(month < 0 || month > 12)
+			}
+
+			if (month < 0 || month > 12)
+			{
 				throw new ArgumentOutOfRangeException(nameof(month));
-			if(day < 0 || day > 31)
+			}
+
+			if (day < 0 || day > 31)
+			{
 				throw new ArgumentOutOfRangeException(nameof(day));
-			if(hour < 0 || hour >= 24)
+			}
+
+			if (hour < 0 || hour >= 24)
+			{
 				throw new ArgumentOutOfRangeException(nameof(hour));
-			if(minute < 0 || minute >= 60)
+			}
+
+			if (minute < 0 || minute >= 60)
+			{
 				throw new ArgumentOutOfRangeException(nameof(minute));
-			if(second < 0 || second >= 60)
+			}
+
+			if (second < 0 || second >= 60)
+			{
 				throw new ArgumentOutOfRangeException(nameof(second));
-			if(millisecond < 0 || millisecond >= 1000)
+			}
+
+			if (millisecond < 0 || millisecond >= 1000)
+			{
 				throw new ArgumentOutOfRangeException(nameof(millisecond));
+			}
 
 			var str = (byte[]) sourceId.Clone();
 			var mangledTime = $"{second:00}{month:00}{hour:00}{day:00}{(millisecond/10):00}{year:0000}{minute:00}";
@@ -180,18 +208,30 @@ namespace UkooLabs.FbxSharpie
 		/// <param name="version"></param>
 		protected void WriteFooter(BinaryWriter stream, int version)
 		{
-			var zeroes = new byte[Math.Max(footerZeroes1, footerZeroes2)];
-			stream.Write(zeroes, 0, footerZeroes1);
+			var position = stream.BaseStream.Position;
+			var paddingLength = (int)(16 - (position % 16));
+			if (paddingLength == 0)
+			{
+				paddingLength = 16;
+			}
+			paddingLength += 4;
+			var zeroes = new byte[Math.Max(paddingLength, footerZeroes)];
+			stream.Write(zeroes, 0, paddingLength);
 			stream.Write(version);
-			stream.Write(zeroes, 0, footerZeroes2);
+			stream.Write(zeroes, 0, footerZeroes);
 			stream.Write(extension, 0, extension.Length);
 		}
 
 		static bool AllZero(byte[] array)
 		{
 			foreach(var b in array)
+			{
 				if (b != 0)
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -203,12 +243,19 @@ namespace UkooLabs.FbxSharpie
 		/// <returns><c>true</c> if it's compliant</returns>
 		protected bool CheckFooter(BinaryReader stream, FbxVersion version)
 		{
-			var buffer = new byte[Math.Max(footerZeroes1, footerZeroes2)];
-			stream.Read(buffer, 0, footerZeroes1);
+			var position = stream.BaseStream.Position;
+			var paddingLength = (int)(16 - (position % 16));
+			if (paddingLength == 0)
+			{
+				paddingLength = 16;
+			}
+			paddingLength += 4;
+			var buffer = new byte[Math.Max(paddingLength, footerZeroes)];
+			stream.Read(buffer, 0, paddingLength);
 			bool correct = AllZero(buffer);
 			var readVersion = stream.ReadInt32();
 			correct &= (readVersion == (int)version);
-			stream.Read(buffer, 0, footerZeroes2);
+			stream.Read(buffer, 0, footerZeroes);
 			correct &= AllZero(buffer);
 			stream.Read(buffer, 0, extension.Length);
 			correct &= CheckEqual(buffer, extension);

@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UkooLabs.FbxSharpie", "UkooLabs.FbxSharpie\UkooLabs.FbxSharpie.csproj", "{E195A80B-297D-4404-8960-39CABE896751}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UkooLabs.FbxSharpie.Tests", "UkooLabs.FbxSharpie.Tests\UkooLabs.FbxSharpie.Tests.csproj", "{5BF21323-F472-4AEE-9185-4B0077C3FFF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UkooLabs.FbxSharpie.Tests", "UkooLabs.FbxSharpie.Tests\UkooLabs.FbxSharpie.Tests.csproj", "{5BF21323-F472-4AEE-9185-4B0077C3FFF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTest", "QuickTest\QuickTest.csproj", "{E3E288F0-065E-4240-890B-190DB3442AB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5BF21323-F472-4AEE-9185-4B0077C3FFF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BF21323-F472-4AEE-9185-4B0077C3FFF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BF21323-F472-4AEE-9185-4B0077C3FFF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3E288F0-065E-4240-890B-190DB3442AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3E288F0-065E-4240-890B-190DB3442AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3E288F0-065E-4240-890B-190DB3442AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3E288F0-065E-4240-890B-190DB3442AB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

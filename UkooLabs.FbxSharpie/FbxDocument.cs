@@ -1,7 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using UkooLabs.FbxSharpie.Extensions;
+using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Tokens.Value;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -22,7 +25,9 @@ namespace UkooLabs.FbxSharpie
 
 		private string PropertiesName => Version >= FbxVersion.v7_0 ? "Properties70" : "Properties60";
 
-		private FbxNode GetNodeWithValue(FbxNode[] nodes, object value)
+		private string GeometryName => Version >= FbxVersion.v7_0 ? "Geometry" : "Model";
+
+		private FbxNode GetNodeWithValue(FbxNode[] nodes, Token value)
         {
             foreach (var node in nodes)
             {
@@ -30,7 +35,7 @@ namespace UkooLabs.FbxSharpie
                 {
                     continue;
                 }
-                if (node.Value.AsObject.Equals(value))
+                if (node.Value.Equals(value))
                 {
                     return node;
                 }
@@ -47,7 +52,7 @@ namespace UkooLabs.FbxSharpie
                 {
                     continue;
                 }
-                if (node.Name == name)
+                if (node.Identifier.Value == name)
                 {
                     nodeList.Add(node);
                 }
@@ -56,111 +61,454 @@ namespace UkooLabs.FbxSharpie
             return nodeList.ToArray();
         }
 
-        private bool HasConnection(long value1, long value2)
-        {
-            var connections = GetRelative("Connections").Nodes;
-            return connections.Any(c => c != null && c.Properties[1].AsLong == value1 && c.Properties[2].AsLong == value2);
-        }
-
         private int NormalizeIndex(int index)
         {
             return index < 0 ? (index + 1) * -1 : index;
         }
 
-        private FbxNode GetMaterialNodeForGeometry(long geometryId)
-        {
-            var models = GetFbxNodes("Model", this);
-            var materials = GetFbxNodes("Material", this);
-            foreach (var model in models)
-            {
-                var modelId = model.Value.AsLong;
-                if (HasConnection(geometryId, modelId))
-                {
-                    foreach (var material in materials)
-                    {
-                        var materialId = material.Value.AsLong;
-                        if (HasConnection(materialId, modelId))
-                        {
-                            return material;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
+		public int[] GetVertexIndices(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			var polygonVertexIndexNode = geometryNode.GetRelative("PolygonVertexIndex");
 
-        private FbxNode GetGeometry(long geometryId)
-        {
-            var geometryNodes = GetFbxNodes("Geometry", this);
-            foreach (var geometryNode in geometryNodes)
-            {
-                if (geometryNode.Value.AsLong != geometryId)
-                {
-                    continue;
-                }
-                return geometryNode;
-            }
-            return null;
-        }
+			int[] vertexIndices;
 
-        public int[] GetVertexIndices(long geometryId)
-        {
-            var geometryNode = GetGeometry(geometryId);
-            var vertexIndices = geometryNode.GetRelative("PolygonVertexIndex").Value.AsIntArray;
-			var result = new List<int>();
-
-			var i = 0;
-			while (i < vertexIndices.Length)
+			if (Version >= FbxVersion.v7_0)
 			{
-				var quadMode = vertexIndices[i + 2] >= 0;
-				if (quadMode)
+				polygonVertexIndexNode.Value.TryGetAsIntArray(out vertexIndices);
+			}
+			else
+			{
+				vertexIndices = polygonVertexIndexNode.PropertiesToIntArray();
+			}
+
+			var result = new List<int>();
+			var polyIndex = 0;
+			for (var i = 0;  i < vertexIndices.Length; i++)
+			{
+				var normalizedIndex = NormalizeIndex(vertexIndices[i]);
+				if (polyIndex <= 2)
 				{
-					result.Add(NormalizeIndex(vertexIndices[i]));
-					result.Add(NormalizeIndex(vertexIndices[i + 1]));
-					result.Add(NormalizeIndex(vertexIndices[i + 3]));
-					result.Add(NormalizeIndex(vertexIndices[i + 3]));
-					result.Add(NormalizeIndex(vertexIndices[i + 1]));
-					result.Add(NormalizeIndex(vertexIndices[i + 2]));
-					i += 4;
+					result.Add(normalizedIndex);
 				}
 				else
 				{
-					result.Add(NormalizeIndex(vertexIndices[i]));
-					result.Add(NormalizeIndex(vertexIndices[i + 1]));
-					result.Add(NormalizeIndex(vertexIndices[i + 2]));
-					i += 3;
+					result.Add(normalizedIndex);
+					result.Add(vertexIndices[i - polyIndex]);
+					result.Add(vertexIndices[i - 1]);
 				}
-			}
-            return result.ToArray();
-        }
-
-        public Vector3[] GetVertices(long geometryId)
-        {
-            var geometryNode = GetGeometry(geometryId);
-            var vertices = geometryNode.GetRelative("Vertices").Value.AsDoubleArray;
-            var result = new List<Vector3>();
-            for (var i = 0; i < vertices.Length; i += 3)
-            {
-                result.Add(new Vector3((float)vertices[i], (float)vertices[i + 1], (float)vertices[i + 2]));
-            }
-            return result.ToArray();
-        }
-
-        public Vector3[] GetNormals(long geometryId)
-        {
-            var geometryNode = GetGeometry(geometryId);
-			var result = new List<Vector3>();
-			var normalNode = geometryNode.GetRelative("LayerElementNormal/Normals");
-			if (normalNode != null)
-			{
-				var normals = normalNode.Value.AsDoubleArray;
-				for (var i = 0; i < normals.Length; i += 3)
+				polyIndex++;
+				if (vertexIndices[i] < 0)
 				{
-					result.Add(new Vector3((float)normals[i], (float)normals[i + 1], (float)normals[i + 2]));
+					polyIndex = 0;
 				}
 			}
-            return result.ToArray();
+			return result.ToArray();
+		}
+
+		private FbxNode GetGeometry(long geometryId)
+        {
+            var geometryNodes = GetFbxNodes(GeometryName, this);
+			foreach (var geometryNode in geometryNodes)
+			{
+				foreach (var property in geometryNode.Properties)
+				{
+					if (property is LongToken longToken && geometryId == longToken.Value)
+					{
+						return geometryNode;
+					}
+				}
+			}
+			throw new KeyNotFoundException($"Geometry node with id {geometryId} not found.");
         }
+
+		private FbxNode GetMaterial(long materialId)
+		{
+			var materialNodes = GetFbxNodes("Material", this);
+			foreach (var materialNode in materialNodes)
+			{
+				foreach (var property in materialNode.Properties)
+				{
+					if (property is LongToken longToken && materialId == longToken.Value)
+					{
+						return materialNode;
+					}
+				}
+			}
+			throw new KeyNotFoundException($"Material node with id {materialId} not found.");
+		}
+
+		private bool IsDirect(string value)
+		{
+			return string.Equals(value, "Direct", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsIndex(string value)
+		{
+			return string.Equals(value, "Index", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsIndexToDirect(string value)
+		{
+			return string.Equals(value, "IndexToDirect", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsAllSame(string value)
+		{
+			return string.Equals(value, "AllSame", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsByVertice(string value)
+		{
+			return string.Equals(value, "ByVertice", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsByControlPoint(string value)
+		{
+			return string.Equals(value, "ByControlPoint", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsByPolygonVertex(string value)
+		{
+			return string.Equals(value, "ByPolygonVertex", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		private bool IsByPolygon(string value)
+		{
+			return string.Equals(value, "ByPolygon", StringComparison.CurrentCultureIgnoreCase);
+		}
+
+
+		public Vector3 ToVector3(float[] values, int index)
+		{
+			var id = index * 3;
+			return new Vector3(values[id], values[id + 1], values[id + 2]);
+		}
+
+		public Vector2 ToVector2(float[] values, int index)
+		{
+			var id = index * 2;
+			return new Vector2(values[id], values[id + 1]);
+		}
+
+		private int ParseVertexIndex(int[] layerIndices, string mappingNode, string referenceMode, int controlPointIndex, int vertexindex)
+		{
+			if (IsByControlPoint(mappingNode))
+			{
+				if (IsDirect(referenceMode))
+				{
+					return controlPointIndex;
+				}
+				else if (IsIndex(referenceMode) || IsIndexToDirect(referenceMode))
+				{
+					return layerIndices[controlPointIndex];
+				}
+			}
+			else if (IsByPolygonVertex(mappingNode) || IsByVertice(mappingNode))
+			{
+				if (IsDirect(referenceMode))
+				{
+					return vertexindex;
+				}
+				else if (IsIndex(referenceMode) || IsIndexToDirect(referenceMode))
+				{
+					return layerIndices[vertexindex];
+				}
+			}
+			else if (IsByPolygon(mappingNode))
+			{
+				return vertexindex;
+			}
+			else if (IsAllSame(mappingNode))
+			{
+				return 0;
+			}
+
+			throw new NotSupportedException();
+		}
+
+		public Vector3 ParseVertexAsVector3(float[] layerValues, int[] layerIndices, string mappingMode, string referenceMode, int controlPointIndex, int vertexindex)
+		{
+			var index = ParseVertexIndex(layerIndices, mappingMode, referenceMode, controlPointIndex, vertexindex);
+			return ToVector3(layerValues, index);
+		}
+
+		public Vector2 ParseVertexAsVector2(float[] layerValues, int[] layerIndices, string mappingMode, string referenceMode, int controlPointIndex, int vertexindex)
+		{
+			var index = ParseVertexIndex(layerIndices, mappingMode, referenceMode, controlPointIndex, vertexindex);
+			return ToVector2(layerValues, index);
+		}
+
+		public int ParseVertexAsInt(int[] layerValues, int[] layerIndices, string mappingMode, string referenceMode, int controlPointIndex, int vertexindex)
+		{
+			var index = ParseVertexIndex(layerIndices, mappingMode, referenceMode, controlPointIndex, vertexindex);
+			return layerValues[index];
+		}
+
+		public Vector3[] GetPositions(long geometryId, int[] vertexIndices)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			var verticesNode = geometryNode.GetRelative("Vertices");
+
+			float[] vertices;
+			if (Version >= FbxVersion.v7_0)
+			{
+				verticesNode.Value.TryGetAsFloatArray(out vertices);
+			}
+			else
+			{
+				vertices = verticesNode.PropertiesToFloatArray();
+			}
+
+			var result = new List<Vector3>();
+			for (var i = 0; i < vertexIndices.Length; i++)
+			{
+				result.Add(ToVector3(vertices, vertexIndices[i]));
+			}
+			return result.ToArray();
+		}
+
+		private void GetLayerFloatValues(long geometryId, string layerElement, long layerIndex, string layerName, string layerIndexName, out float[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			var layerNodes = geometryNode?.GetChildren(layerElement);
+
+			if (layerNodes != null)
+			{
+				foreach (var layerNode in layerNodes)
+				{
+					var index = layerNode.Properties[0].GetAsLong();
+					if (index != layerIndex)
+					{
+						continue;
+					}
+					var layerTypeNode = layerNode?.GetRelative(layerName);
+					layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsFloatArray() : layerTypeNode?.PropertiesToFloatArray();
+					var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
+					layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
+					mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
+					referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
+					return;
+				}
+			}
+
+			layerValues = new float[] { };
+			layerIndices = new int[] { };
+			mappingMode = null;
+			referenceMode = null;
+		}
+
+		private void GetLayerIntValues(long geometryId, string layerElement, long layerIndex, string layerName, string layerIndexName, out int[] layerValues, out int[] layerIndices, out string mappingMode, out string referenceMode)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			var layerNodes = geometryNode?.GetChildren(layerElement);
+
+			if (layerNodes != null)
+			{
+				foreach (var layerNode in layerNodes)
+				{
+					var index = layerNode.Properties[0].GetAsLong();
+					if (index != layerIndex)
+					{
+						continue;
+					}
+					var layerTypeNode = layerNode?.GetRelative(layerName);
+					layerValues = Version >= FbxVersion.v7_0 ? layerTypeNode?.Value.GetAsIntArray() : layerTypeNode?.PropertiesToIntArray();
+					var layerIndicesNode = layerNode?.GetRelative(layerIndexName);
+					layerIndices = Version >= FbxVersion.v7_0 ? layerIndicesNode?.Value.GetAsIntArray() : layerIndicesNode?.PropertiesToIntArray();
+					mappingMode = layerNode?.GetRelative("MappingInformationType")?.Value.GetAsString();
+					referenceMode = layerNode?.GetRelative("ReferenceInformationType")?.Value.GetAsString();
+					return;
+				}
+			}
+
+			layerValues = new int[] { };
+			layerIndices = new int[] { };
+			mappingMode = null;
+			referenceMode = null;
+		}
+
+		public Vector3[] GetNormals(long geometryId, int[] vertexIndices, long layerIndex = 0)
+		{
+			var normals = new List<Vector3>();
+			if (!GetGeometryHasNormals(geometryId))
+			{
+				return normals.ToArray();
+			}
+
+			GetLayerFloatValues(geometryId, "LayerElementNormal", layerIndex, "Normals", "NormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+
+			var vertexIndex = 0;
+			for (var i = 0; i < 3; i++)
+			{
+				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
+				{
+					var controlPointIndex = vertexIndices[polyIndex + i];
+					normals.Add(ParseVertexAsVector3(layerValues, layerIndices, mappingMode, referenceMode, controlPointIndex, vertexIndex));
+				}
+				vertexIndex++;
+			}
+			return normals.ToArray();
+		}
+
+		private string LayerElementTypeToString(FbxLayerElementType layerElementType)
+		{
+			switch (layerElementType)
+			{
+				case FbxLayerElementType.Normal:
+					return "LayerElementNormal";
+				case FbxLayerElementType.Tangent:
+					return "LayerElementTangent";
+				case FbxLayerElementType.Binormal:
+					return "LayerElementBinormal";
+				case FbxLayerElementType.TexCoord:
+					return "LayerElementUV";
+				case FbxLayerElementType.Material:
+					return "LayerElementMaterial";
+				default:
+					throw new NotSupportedException($"Conversion from '{layerElementType}' not supported.");
+			}
+		}
+
+		public long[] GetLayerIndices(long geometryId, FbxLayerElementType layerElementType)
+		{
+			var layerElementTypeString = LayerElementTypeToString(layerElementType);
+
+			var result = new List<long>();
+			var geometryNode = GetGeometry(geometryId);
+			var layerNodes = geometryNode?.GetChildren("Layer");
+			if (layerNodes != null)
+			{
+				foreach (var layerNode in layerNodes)
+				{
+					var elementNodes = layerNode?.GetChildren("LayerElement");
+					if (elementNodes != null)
+					{
+						foreach (var elementNode in elementNodes)
+						{
+							var elementTypeToken = elementNode["Type"].FirstOrDefault()?.Value as StringToken;
+							if (elementTypeToken.TryGetAsString(out var elementType) && string.Equals(elementType, layerElementTypeString))
+							{
+								var indexToken = elementNode["TypedIndex"].FirstOrDefault()?.Value as IntegerToken;
+								if (indexToken.TryGetAsLong(out var index))
+								{ 
+									result.Add(index);
+								}
+							}
+						}
+					}
+				}
+			}
+			return result.ToArray();
+		}
+
+		public Vector3[] GetTangents(long geometryId, int[] vertexIndices, long layerIndex = 0)
+		{
+			var tangents = new List<Vector3>();
+			if (!GetGeometryHasTangents(geometryId))
+			{
+				return tangents.ToArray();
+			}
+
+			GetLayerFloatValues(geometryId, "LayerElementTangent", layerIndex, "Tangents", "TangentsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+
+			var vertexIndex = 0;
+			for (var i = 0; i < 3; i++)
+			{
+				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
+				{
+					var controlPointIndex = vertexIndices[polyIndex + i];
+					tangents.Add(ParseVertexAsVector3(layerValues, layerIndices, mappingMode, referenceMode, controlPointIndex, vertexIndex));
+				}
+				vertexIndex++;
+			}
+			return tangents.ToArray();
+		}
+
+		public Vector3[] GetBinormals(long geometryId, int[] vertexIndices, long layerIndex = 0)
+		{
+			var binormals = new List<Vector3>();
+			if (!GetGeometryHasTangents(geometryId))
+			{
+				return binormals.ToArray();
+			}
+
+			GetLayerFloatValues(geometryId, "LayerElementBinormal", layerIndex, "Binormals", "BinormalsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+
+			var vertexIndex = 0;
+			for (var i = 0; i < 3; i++)
+			{
+				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
+				{
+					var controlPointIndex = vertexIndices[polyIndex + i];
+					binormals.Add(ParseVertexAsVector3(layerValues, layerIndices, mappingMode, referenceMode, controlPointIndex, vertexIndex));
+				}
+				vertexIndex++;
+			}
+			return binormals.ToArray();
+		}
+
+		public Vector2[] GetTexCoords(long geometryId, int[] vertexIndices, long layerIndex = 0)
+		{
+			var texCoords = new List<Vector2>();
+			if (!GetGeometryHasTexCoords(geometryId))
+			{
+				return texCoords.ToArray();
+			}
+
+			GetLayerFloatValues(geometryId, "LayerElementUV", layerIndex, "UV", "UVIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+
+			var vertexIndex = 0;
+			for (var i = 0; i < 3; i++)
+			{
+				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
+				{
+					var controlPointIndex = vertexIndices[polyIndex + i];
+					texCoords.Add(ParseVertexAsVector2(layerValues, layerIndices, mappingMode, referenceMode, controlPointIndex, vertexIndex));
+				}
+				vertexIndex++;
+			}
+			return texCoords.ToArray();
+		}
+
+		public int[] GetMaterials(long geometryId, int[] vertexIndices, long layerIndex = 0)
+		{
+			var materials = new List<int>();
+			if (!GetGeometryHasMaterials(geometryId))
+			{
+				return materials.ToArray();
+			}
+
+			GetLayerIntValues(geometryId, "LayerElementMaterial", layerIndex, "Materials", "MaterialsIndex", out var layerValues, out var layerIndices, out string mappingMode, out string referenceMode);
+
+			var vertexIndex = 0;
+			for (var i = 0; i < 3; i++)
+			{
+				for (var polyIndex = 0; polyIndex < vertexIndices.Length; polyIndex += 3)
+				{
+					var controlPointIndex = vertexIndices[polyIndex + i];
+					materials.Add(ParseVertexAsInt(layerValues, layerIndices, mappingMode, referenceMode, controlPointIndex, vertexIndex));
+				}
+				vertexIndex++;
+			}
+			return materials.ToArray();
+		}
+
+		//https://github.com/nem0/OpenFBX/blob/master/src/ofbx.cpp
+		//https://github.com/assimp/assimp/blob/78ec42fc17f4c04de04ac195f0fce3bea93a7995/code/FBX/FBXExportNode.cpp
+
+
+		public bool GetGeometryHasMaterials(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			return geometryNode.GetRelative("LayerElementMaterial/Materials") != null;
+		}
+
+		public bool GetGeometryHasNormals(long geometryId)
+		{
+			var geometryNode = GetGeometry(geometryId);
+			return geometryNode.GetRelative("LayerElementNormal/Normals") != null;
+		}
 
 		public bool GetGeometryHasTangents(long geometryId)
 		{
@@ -168,104 +516,124 @@ namespace UkooLabs.FbxSharpie
 			return geometryNode.GetRelative("LayerElementTangent/Tangents") != null;
 		}
 
-		public Vector3[] GetTangents(long geometryId)
-        {
-            var geometryNode = GetGeometry(geometryId);
-			var result = new List<Vector3>();
-			var tangentNode = geometryNode.GetRelative("LayerElementTangent/Tangents");
-			if (tangentNode != null)
-			{
-				var tangents = tangentNode.Value.AsDoubleArray;
-				for (var i = 0; i < tangents.Length; i += 3)
-				{
-					result.Add(new Vector3((float)tangents[i], (float)tangents[i + 1], (float)tangents[i + 2]));
-				}
-			}
-            return result.ToArray();
-        }
-
 		public bool GetGeometryHasBinormals(long geometryId)
 		{
 			var geometryNode = GetGeometry(geometryId);
 			return geometryNode.GetRelative("LayerElementBinormal/Binormals") != null;
 		}
 
-		public Vector3[] GetBinormals(long geometryId)
+		public bool GetGeometryHasTexCoords(long geometryId)
 		{
 			var geometryNode = GetGeometry(geometryId);
-			var result = new List<Vector3>();
-			var binormalNode = geometryNode.GetRelative("LayerElementBinormal/Binormals");
-			if (binormalNode != null)
+			return geometryNode.GetRelative("LayerElementUV/UV") != null;
+		}
+
+		public string GetMaterialName(long materialId)
+		{
+			var materialNode = GetMaterial(materialId);
+			var property = materialNode.GetPropertyWithName("Material");
+			return property.GetAsString().Split(new string[] { "::" }, StringSplitOptions.None)[1];
+		}
+
+		public Vector4 GetMaterialDiffuseColor(long materialId)
+		{
+			var materialNode = GetMaterial(materialId);
+			var materialProperties = materialNode.GetRelative(PropertiesName);
+			var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, new StringToken("DiffuseColor"));
+			if (Version >= FbxVersion.v7_0)
 			{
-				var binormals = binormalNode.Value.AsDoubleArray;
-				for (var i = 0; i < binormals.Length; i += 3)
+				var alpha = diffuseProperty.Properties.Length > 7 ? diffuseProperty.Properties[7].GetAsFloat() : 1.0f;
+				return new Vector4(diffuseProperty.Properties[4].GetAsFloat(), diffuseProperty.Properties[5].GetAsFloat(), diffuseProperty.Properties[6].GetAsFloat(), alpha);
+			}
+			else
+			{
+				var alpha = diffuseProperty.Properties.Length > 6 ? diffuseProperty.Properties[6].GetAsFloat() : 1.0f;
+				return new Vector4(diffuseProperty.Properties[3].GetAsFloat(), diffuseProperty.Properties[4].GetAsFloat(), diffuseProperty.Properties[5].GetAsFloat(), alpha);
+			}
+		}
+
+		public long GetConnection(long id)
+		{
+			var connectionNodes = GetFbxNodes("Connections", this)[0].Nodes;
+			foreach (var connectionNode in connectionNodes)
+			{
+				if (connectionNode == null || connectionNode.Properties.Length < 2)
 				{
-					result.Add(new Vector3((float)binormals[i], (float)binormals[i + 1], (float)binormals[i + 2]));
+					continue;
+				}
+				if (!(connectionNode.Properties[1] is LongToken sourceToken) || sourceToken.Value != id)
+				{
+					continue;
+				}
+				if (!(connectionNode.Properties[2] is LongToken destToken))
+				{
+					continue;
+				}
+				return destToken.Value;
+			}
+			throw new KeyNotFoundException($"Connection node with id {id} not found.");
+		}
+
+		public long GetMaterialId(long geometryId)
+		{
+			var modelId = GetConnection(geometryId);
+			var materialIds = GetMaterialIds();
+			foreach (var materialId in materialIds)
+			{
+				if (GetConnection(materialId) == modelId)
+				{
+					return materialId;
+				}
+			}
+			throw new KeyNotFoundException($"Material not found for geometry id {geometryId}.");
+		}
+
+
+		public long[] GetGeometryIds()
+        {
+			var geometryNodes = GetFbxNodes(GeometryName, this);
+            var result = new List<long>();
+            foreach (var geometryNode in geometryNodes)
+            {
+				foreach (var property in geometryNode.Properties)
+				{
+					if (property is LongToken longToken)
+					{
+						result.Add(longToken.Value);
+						break;
+					}
+				}
+            }
+            return result.ToArray();
+        }
+
+		public long[] GetMaterialIds()
+		{
+			var materialNodes = GetFbxNodes("Material", this);
+			var result = new List<long>();
+			foreach (var materialNode in materialNodes)
+			{
+				foreach (var property in materialNode.Properties)
+				{
+					if (property is LongToken longToken)
+					{
+						result.Add(longToken.Value);
+						break;
+					}
 				}
 			}
 			return result.ToArray();
 		}
 
-		public Vector2[] GetTexCoords(long geometryId)
-        {
-            var geometryNode = GetGeometry(geometryId);
-			var result = new List<Vector2>();
-			var texCoordNode = geometryNode.GetRelative("LayerElementUV/UV");
-			if (texCoordNode != null)
-			{
-				var texCoords = texCoordNode.Value.AsDoubleArray;
-				for (var i = 0; i < texCoords.Length; i += 2)
-				{
-					result.Add(new Vector2((float)texCoords[i], (float)texCoords[i + 1]));
-				}
-			}
-            return result.ToArray();
-        }
-
-		public bool GetGeometryHasMaterial(long geometryId)
-		{
-			return GetMaterialNodeForGeometry(geometryId) != null;
-		}
-
-        public string GetMaterialName(long geometryId)
-        {
-            var materialNode = GetMaterialNodeForGeometry(geometryId);
-			if (materialNode == null)
-			{
-				return null;
-			}
-			return  materialNode.Properties[1].AsString.Split(new string[] { "::" }, StringSplitOptions.None)[1];
-        }
-
-        public Vector4 GetMaterialDiffuseColor(long geometryId)
-        {
-            var materialNode = GetMaterialNodeForGeometry(geometryId);
-			if (materialNode == null)
-			{
-				return new Vector4(1.0f);
-			}
-            var materialProperties = materialNode.GetRelative(PropertiesName);
-            var diffuseProperty = GetNodeWithValue(materialProperties.Nodes, "DiffuseColor");
-			var alpha = diffuseProperty.Properties.Length > 7 ? diffuseProperty.Properties[7].AsFloat : 1.0f;
-			return new Vector4(diffuseProperty.Properties[4].AsFloat, diffuseProperty.Properties[5].AsFloat, diffuseProperty.Properties[6].AsFloat, alpha);
-        }
-
-        public long[] GetGeometryIds()
-        {
-            var geometryNodes = GetFbxNodes("Geometry", this);
-            var result = new List<long>();
-            foreach (var geometryNode in geometryNodes)
-            {
-                result.Add(geometryNode.Value.AsLong);
-            }
-            return result.ToArray();
-        }
-
-        public double GetScaleFactor()
+		public double GetScaleFactor()
         {
             var properties = Version >= FbxVersion.v7_0 ? GetRelative($"GlobalSettings/{PropertiesName}") : GetRelative($"Objects/GlobalSettings/{PropertiesName}");
-            var unitScaleFactor = GetNodeWithValue(properties.Nodes, "UnitScaleFactor");
-            return unitScaleFactor.Properties[Version >= FbxVersion.v7_0 ? 4 : 3].AsDouble;
+            var unitScaleFactor = GetNodeWithValue(properties.Nodes, new StringToken("UnitScaleFactor"));
+            if (!unitScaleFactor.Properties[Version >= FbxVersion.v7_0 ? 4 : 3].TryGetAsDouble(out var doubleValue))
+			{
+				throw new NotSupportedException();
+			}
+			return doubleValue;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -24,19 +23,8 @@ namespace UkooLabs.FbxSharpie
 		/// <param name="line"></param>
 		/// <param name="column"></param>
 		/// <param name="message"></param>
-		public FbxException(int line, int column, string message) :
-			base($"{message}, near line {line} column {column}")
-		{
-		}
-
-		/// <summary>
-		/// An error in a node object
-		/// </summary>
-		/// <param name="nodePath"></param>
-		/// <param name="propertyID"></param>
-		/// <param name="message"></param>
-		public FbxException(Stack<string> nodePath, int propertyID, string message) :
-			base(message + ", at " + string.Join("/", nodePath.ToArray()) + (propertyID < 0 ? "" : $"[{propertyID}]"))
+		public FbxException(FbxAsciiFileInfo fbxAsciiFileInfo, string message) :
+			base($"{message}, near line {fbxAsciiFileInfo.Line} column {fbxAsciiFileInfo.Column}")
 		{
 		}
 	}

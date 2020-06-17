@@ -2,6 +2,9 @@
 using System.Text;
 using System.IO;
 using System.IO.Compression;
+using UkooLabs.FbxSharpie.Tokens;
+using UkooLabs.FbxSharpie.Tokens.ValueArray;
+using UkooLabs.FbxSharpie.Tokens.Value;
 
 namespace UkooLabs.FbxSharpie
 {
@@ -25,42 +28,48 @@ namespace UkooLabs.FbxSharpie
 		public FbxBinaryReader(Stream stream, ErrorLevel errorLevel = ErrorLevel.Checked)
 		{
 			if(stream == null)
+			{
 				throw new ArgumentNullException(nameof(stream));
-			if(!stream.CanSeek)
+			}
+
+			if (!stream.CanSeek)
+			{
 				throw new ArgumentException(
 					"The stream must support seeking. Try reading the data into a buffer first");
+			}
+
 			this.stream = new BinaryReader(stream, Encoding.ASCII);
 			this.errorLevel = errorLevel;
 		}
 
 		// Reads a single property
-		FbxValue ReadProperty()
+		Token ReadProperty()
 		{
 			var dataType = (char) stream.ReadByte();
 			switch (dataType)
 			{
 				case 'Y':
-					return new FbxValue(stream.ReadInt16());
+					return new ShortToken(stream.ReadInt16());
 				case 'C':
-					return new FbxValue((char)stream.ReadByte());
+					return new BooleanToken(stream.ReadByte() == 'T');
 				case 'I':
-					return new FbxValue(stream.ReadInt32());
+					return new IntegerToken(stream.ReadInt32());
 				case 'F':
-					return new FbxValue(stream.ReadSingle());
+					return new FloatToken(stream.ReadSingle());
 				case 'D':
-					return new FbxValue(stream.ReadDouble());
+					return new DoubleToken(stream.ReadDouble());
 				case 'L':
-					return new FbxValue(stream.ReadInt64());
+					return new LongToken(stream.ReadInt64());
 				case 'f':
-					return new FbxValue(ReadArray(br => br.ReadSingle(), typeof(float)));
+					return new FloatArrayToken(ReadArray<float>(br => br.ReadSingle()));
 				case 'd':
-					return new FbxValue(ReadArray(br => br.ReadDouble(), typeof(double)));
+					return new DoubleArrayToken(ReadArray<double>(br => br.ReadDouble()));
 				case 'l':
-					return new FbxValue(ReadArray(br => br.ReadInt64(), typeof(long)));
+					return new LongArrayToken(ReadArray<long>(br => br.ReadInt64()));
 				case 'i':
-					return new FbxValue(ReadArray(br => br.ReadInt32(), typeof(int)));
+					return new IntegerArrayToken(ReadArray<int>(br => br.ReadInt32()));
 				case 'b':
-					return new FbxValue(ReadArray(br => br.ReadBoolean(), typeof(bool)));
+					return new BooleanArrayToken(ReadArray<bool>(br => br.ReadBoolean()));
 				case 'S':
 					var len = stream.ReadInt32();
 					var str = len == 0 ? "" : Encoding.ASCII.GetString(stream.ReadBytes(len));
@@ -73,78 +82,106 @@ namespace UkooLabs.FbxSharpie
 						for (int i = tokens.Length - 1; i >= 0; i--)
 						{	
 							if (!first)
+							{
 								sb.Append(asciiSeparator);
+							}
+
 							sb.Append(tokens[i]);
 							first = false;
 						}
 						str = sb.ToString();
 					}
-					return new FbxValue(str);
+					return new StringToken(str);
 				case 'R':
-					return new FbxValue(stream.ReadBytes(stream.ReadInt32()));
+					return new ByteArrayToken(stream.ReadBytes(stream.ReadInt32()));
                 default:
 					throw new FbxException(stream.BaseStream.Position - 1,
 						"Invalid property data type `" + dataType + "'");
 			}
 		}
 
+
+
 		// Reads an array, decompressing it if required
-		Array ReadArray(ReadPrimitive readPrimitive, Type arrayType)
+		T[] ReadArray<T>(ReadPrimitive readPrimitive)
 		{
 			var len = stream.ReadInt32();
 			var encoding = stream.ReadInt32();
 			var compressedLen = stream.ReadInt32();
-			var ret = Array.CreateInstance(arrayType, len);
+			var ret = new T[len];
 			var s = stream;
 			var endPos = stream.BaseStream.Position + compressedLen;
-			if (encoding != 0)
-			{
-				if(errorLevel >= ErrorLevel.Checked)
-				{
-					if(encoding != 1)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression encoding (must be 0 or 1)");
-					var cmf = stream.ReadByte();
-					if((cmf & 0xF) != 8 || (cmf >> 4) > 7)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression format " + cmf);
-					var flg = stream.ReadByte();
-					if(errorLevel >= ErrorLevel.Strict && ((cmf << 8) + flg) % 31 != 0)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression FCHECK");
-					if((flg & (1 << 5)) != 0)
-						throw new FbxException(stream.BaseStream.Position - 1,
-							"Invalid compression flags; dictionary not supported");
-				} else
-				{
-					stream.BaseStream.Position += 2;
-				}
-				var codec = new DeflateWithChecksum(stream.BaseStream, CompressionMode.Decompress);
-				s = new BinaryReader(codec);
-			}
-			try
+
+			if (encoding == 0)
 			{
 				for (int i = 0; i < len; i++)
-					ret.SetValue(readPrimitive(s), i);
+				{
+					ret[i] = (T)readPrimitive(s);
+				}
+				return ret;
 			}
-			catch (InvalidDataException)
+
+			if(errorLevel >= ErrorLevel.Checked)
 			{
-				throw new FbxException(stream.BaseStream.Position - 1,
-					"Compressed data was malformed");
+				if(encoding != 1)
+				{
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression encoding (must be 0 or 1)");
+				}
+
+				var cmf = stream.ReadByte();
+				if((cmf & 0xF) != 8 || (cmf >> 4) > 7)
+				{
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression format " + cmf);
+				}
+
+				var flg = stream.ReadByte();
+				if(errorLevel >= ErrorLevel.Strict && ((cmf << 8) + flg) % 31 != 0)
+				{
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression FCHECK");
+				}
+
+				if ((flg & (1 << 5)) != 0)
+				{
+					throw new FbxException(stream.BaseStream.Position - 1,
+						"Invalid compression flags; dictionary not supported");
+				}
+			} else
+			{
+				stream.BaseStream.Position += 2;
 			}
-			if (encoding != 0)
+
+			using (var codec = new DeflateStream(stream.BaseStream, CompressionMode.Decompress, true))
+			using (var bs = new ChecksumBinaryReader(codec))
 			{
+				try
+				{
+					for (int i = 0; i < len; i++)
+					{
+						ret[i] = (T)readPrimitive(bs);
+					}
+				}
+				catch (InvalidDataException)
+				{
+					throw new FbxException(stream.BaseStream.Position - 1, "Compressed data was malformed");
+				}
+
 				if (errorLevel >= ErrorLevel.Checked)
 				{
 					stream.BaseStream.Position = endPos - sizeof(int);
 					var checksumBytes = new byte[sizeof(int)];
 					stream.BaseStream.Read(checksumBytes, 0, checksumBytes.Length);
-					int checksum = 0;
+					uint checksum = 0;
 					for (int i = 0; i < checksumBytes.Length; i++)
+					{
 						checksum = (checksum << 8) + checksumBytes[i];
-					if(checksum != ((DeflateWithChecksum)s.BaseStream).Checksum)
-						throw new FbxException(stream.BaseStream.Position,
-							"Compressed data has invalid checksum");
+					}
+					if (checksum != bs.Checksum)
+					{
+						throw new FbxException(stream.BaseStream.Position, "Compressed data has invalid checksum");
+					}
 				}
 				else
 				{
@@ -175,27 +212,37 @@ namespace UkooLabs.FbxSharpie
 			{
 				// The end offset should only be 0 in a null node
 				if(errorLevel >= ErrorLevel.Checked && (numProperties != 0 || propertyListLen != 0 || !string.IsNullOrEmpty(name)))
+				{
 					throw new FbxException(stream.BaseStream.Position,
 						"Invalid node; expected NULL record");
+				}
+
 				return null;
 			}
 
-			var node = new FbxNode {Name = name};
+			var node = new FbxNode(new IdentifierToken(name));
 
 			var propertyEnd = stream.BaseStream.Position + propertyListLen;
 			// Read properties
 			for (int i = 0; i < numProperties; i++)
+			{
 				node.AddProperty(ReadProperty());
+			}
 
-			if(errorLevel >= ErrorLevel.Checked && stream.BaseStream.Position != propertyEnd)
+			if (errorLevel >= ErrorLevel.Checked && stream.BaseStream.Position != propertyEnd)
+			{
 				throw new FbxException(stream.BaseStream.Position,
 					"Too many bytes in property list, end point is " + propertyEnd);
+			}
 
 			// Read nested nodes
 			var listLen = endOffset - stream.BaseStream.Position;
 			if(errorLevel >= ErrorLevel.Checked && listLen < 0)
+			{
 				throw new FbxException(stream.BaseStream.Position,
 					"Node has invalid end point");
+			}
+
 			if (listLen > 0)
 			{
 				FbxNode nested;
@@ -205,8 +252,10 @@ namespace UkooLabs.FbxSharpie
 					node.AddNode(nested);
 				} while (nested != null);
 				if (errorLevel >= ErrorLevel.Checked && stream.BaseStream.Position != endOffset)
+				{
 					throw new FbxException(stream.BaseStream.Position,
 						"Too many bytes in node, end point is " + endOffset);
+				}
 			}
 			return node;
 		}
@@ -222,18 +271,22 @@ namespace UkooLabs.FbxSharpie
 			// Read header
 			bool validHeader = ReadHeader(stream.BaseStream);
 			if (errorLevel >= ErrorLevel.Strict && !validHeader)
+			{
 				throw new FbxException(stream.BaseStream.Position,
 					"Invalid header string");
+			}
+
 			var document = new FbxDocument {Version = (FbxVersion) stream.ReadInt32()};
 
 			// Read nodes
-			var dataPos = stream.BaseStream.Position;
 			FbxNode nested;
 			do
 			{
 				nested = ReadNode(document);
 				if(nested != null)
+				{
 					document.AddNode(nested);
+				}
 			} while (nested != null);
 
 			// Read footer code
@@ -243,15 +296,20 @@ namespace UkooLabs.FbxSharpie
 			{
 				var validCode = GenerateFooterCode(document);
 				if(!CheckEqual(footerCode, validCode))
+				{
 					throw new FbxException(stream.BaseStream.Position - footerCodeSize,
 						"Incorrect footer code");
+				}
 			}
 
 			// Read footer extension
-			dataPos = stream.BaseStream.Position;
+			var dataPos = stream.BaseStream.Position;
 			var validFooterExtension = CheckFooter(stream, document.Version);
 			if(errorLevel >= ErrorLevel.Strict && !validFooterExtension)
+			{
 				throw new FbxException(dataPos, "Invalid footer");
+			}
+
 			return document;
 		}
 	}
